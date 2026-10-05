@@ -38,6 +38,8 @@
   html {
     background: var(--color-paper);
     color: var(--color-ink);
+    /* Keep anchor targets and focused fields clear of the 72px sticky header. */
+    scroll-padding-top: 88px;
   }
   body {
     font-family: var(--font-sans);
