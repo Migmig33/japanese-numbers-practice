@@ -140,6 +140,15 @@
   }
 }
 
+@keyframes sennin-play {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: -1920px;
+  }
+}
+
 .animate-shake {
   animation: shake 360ms ease-in-out;
 }
@@ -155,5 +164,9 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  /* Hold the mascot on frame 0 of whatever row he is on. */
+  .sennin-sprite {
+    animation: none !important;
   }
 }
