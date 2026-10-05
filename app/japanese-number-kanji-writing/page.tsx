@@ -42,6 +42,33 @@ const FAQ: FaqItem[] = [
 
 const EXAMPLES = [12, 102, 110, 600, 1000, 3684, 8300];
 
+const PRINCIPLES: { rule: string; body: string; jp: string; example: string }[] = [
+  {
+    rule: "Top to bottom",
+    body: "When strokes stack, the highest one goes first. This is the single most useful rule and it decides the whole of two, three and five.",
+    jp: "三",
+    example: "top line, middle line, bottom line — never the other way round.",
+  },
+  {
+    rule: "Left to right",
+    body: "Where strokes sit side by side, work across from the left. Combined with the first rule, this orders most characters on its own: go top-left to bottom-right.",
+    jp: "四",
+    example: "the left wall before the top-and-right stroke that closes the box.",
+  },
+  {
+    rule: "Horizontal before vertical when they cross",
+    body: "At a crossing, the horizontal stroke is drawn first and the vertical cuts down through it afterwards.",
+    jp: "十",
+    example: "the crossbar, then the upright — the reverse feels natural and is wrong.",
+  },
+  {
+    rule: "Enclosures first, and close the box last",
+    body: "For a character boxed in on several sides, draw the enclosure, then everything inside it, then seal the bottom with a final stroke.",
+    jp: "四",
+    example: "walls, then the two strokes inside, then the base line last of all.",
+  },
+];
+
 export default function WritingPage() {
   return (
     <ContentPage
@@ -112,6 +139,45 @@ Trace each number kanji over its guide. The numbered dots show where every strok
               </tbody>
             </table>
           </div>
+        </section>
+      }
+      extra={
+        <section aria-labelledby="principles" className="mt-12">
+          <h2 id="principles" className="text-[30px] text-primary">The four rules that cover almost everything</h2>
+          <p className="mt-3 text-ink/90">
+            Stroke order is not arbitrary and it is not something you memorise character by character. Nearly all of it
+            falls out of four habits, and the number kanji are the easiest place to learn them because the characters
+            are simple enough that you can see each rule working on its own.
+          </p>
+          <ol className="mt-6 space-y-4">
+            {PRINCIPLES.map((r, i) => (
+              <li key={r.rule} className="flex gap-4 rounded-card border border-hairline bg-card p-5">
+                <span className="font-display text-[28px] font-black text-accent tabular-nums">{i + 1}</span>
+                <div className="min-w-0">
+                  <h3 className="font-display text-[20px] text-ink">{r.rule}</h3>
+                  <p className="mt-1 text-[16px] leading-normal text-ink/85">{r.body}</p>
+                  <p className="mt-2 text-[15px] text-muted">
+                    <span lang="ja" className="jp text-[22px] align-middle text-ink">{r.jp}</span>{" "}
+                    <span className="align-middle">{r.example}</span>
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
+          <h3 className="mt-10 text-[24px] text-primary">Why it is worth getting right</h3>
+          <p className="mt-3 text-ink/90">
+            You can draw a character in any order and still end up with something readable, so it is tempting to treat
+            stroke order as a formality. Three things make it worth the small effort now. Written at speed, the standard
+            order is what makes a character keep its shape — the proportions come from the sequence, which is why
+            out-of-order handwriting looks subtly wrong even when every stroke is present. Handwriting recognition on
+            phones and dictionary apps is trained on the standard order, so a wrong sequence is a common reason lookup
+            fails. And stroke counts are how paper dictionaries are indexed, which you cannot do reliably if you are not
+            sure where one stroke ends.
+          </p>
+          <p className="mt-3 text-ink/90">
+            Learn it on these twelve characters and the habit transfers to every kanji you meet afterwards, most of which
+            are built from pieces you will have already traced here.
+          </p>
         </section>
       }
       faq={<Faq items={FAQ} />}
