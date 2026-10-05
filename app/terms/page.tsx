@@ -66,7 +66,7 @@ const SECTIONS: Section[] = [
     heading: "Adverts and outside links",
     body: (
       <p>
-        {SITE_NAME} carries adverts from a third-party network, and those adverts may link to sites we have no control
+        {SITE_NAME} carries adverts served by Google AdSense, and those adverts may link to sites we have no control
         over. We do not endorse advertised products and are not responsible for anything on another company&apos;s site.
         Any dealings you have with an advertiser are between you and them.
       </p>
