@@ -3,6 +3,7 @@ import { Zen_Kaku_Gothic_New, Zen_Maru_Gothic } from "next/font/google";
 import { AdScript } from "@/components/AdScript";
 import { SakuraFall } from "@/components/SakuraFall";
 import { VisitorCount } from "@/components/VisitorCount";
+import { ADSENSE_CLIENT } from "@/lib/ads";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -24,6 +25,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: SITE_NAME, template: `%s · ${SITE_NAME}` },
   applicationName: SITE_NAME,
+  // AdSense verifies ownership from this tag, so it has to be in the served HTML.
+  ...(ADSENSE_CLIENT ? { other: { "google-adsense-account": ADSENSE_CLIENT } } : {}),
 };
 
 export const viewport: Viewport = {

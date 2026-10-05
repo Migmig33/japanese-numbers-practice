@@ -1,3 +1,6 @@
+import { AD_UNITS, ADSENSE_CLIENT } from "@/lib/ads";
+import { AdUnit } from "./AdUnit";
+
 export type AdSize = "728x90" | "336x280" | "300x600";
 
 const DIMENSIONS: Record<AdSize, { w: number; h: number }> = {
@@ -8,8 +11,8 @@ const DIMENSIONS: Record<AdSize, { w: number; h: number }> = {
 
 /**
  * Reserves the slot's space so ads never shift the layout. In development it shows a
- * labeled placeholder; in production it's an empty container the ad network fills
- * (see AdScript). Never place one inside an active quiz question.
+ * labeled placeholder; in production it holds the ad unit, or stays an empty container
+ * until one is configured. Never place one inside an active quiz question.
  */
 export function AdSlot({ size, className = "" }: { size: AdSize; className?: string }) {
   const { w, h } = DIMENSIONS[size];
@@ -28,5 +31,10 @@ export function AdSlot({ size, className = "" }: { size: AdSize; className?: str
     );
   }
 
-  return <div className={`ad-slot mx-auto ${className}`} style={style} data-ad-size={size} aria-label="Advertisement" />;
+  const unit = AD_UNITS[size];
+  return (
+    <div className={`ad-slot mx-auto ${className}`} style={style} data-ad-size={size} aria-label="Advertisement">
+      {ADSENSE_CLIENT && unit ? <AdUnit client={ADSENSE_CLIENT} unit={unit} width={w} height={h} /> : null}
+    </div>
+  );
 }
