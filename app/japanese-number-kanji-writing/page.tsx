@@ -49,8 +49,8 @@ export default function WritingPage() {
       page="writing"
       intro={
         <p>
-          See a number in digits and build it from tiles — in kanji, or as spoken romaji. 102 becomes 百二, 3,684
-          becomes 三千六百八十四. Then trace each number kanji over its guide, with numbered dots for every stroke.
+          See a number in digits and spell it out character by character: 102 becomes 百二, 3,684 becomes
+          三千六百八十四. Then trace each number kanji over its guide, with numbered dots for every stroke.
         </p>
       }
       widget={

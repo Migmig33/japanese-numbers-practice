@@ -66,7 +66,11 @@ export default function TimePage() {
       }
       widget={
         <>
-          <QuizWidget defaultSets={["hours", "minutes", "half", "ampm", "question"]} label="Telling time quiz" />
+          <QuizWidget
+            groups={["time"]}
+            defaultSets={["hours", "minutes", "half", "ampm", "question"]}
+            label="Telling time quiz"
+          />
           <ClockDrill />
           <JsonLd data={quizJsonLd("time", ["Telling time in Japanese", "Japanese hours", "Japanese minutes"])} />
         </>

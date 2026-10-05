@@ -8,7 +8,11 @@ const GROUPS = [
   { id: "time", jp: "時間", en: "Time" },
 ] as const;
 
+export type SetGroup = (typeof GROUPS)[number]["id"];
+
 type Props = {
+  /** Which groups this page is about. Offering the rest would duplicate another page. */
+  groups: readonly SetGroup[];
   selected: ReadonlySet<SetId>;
   count: number;
   onToggle: (id: SetId) => void;
@@ -16,7 +20,8 @@ type Props = {
   onStart: () => void;
 };
 
-export function SetPicker({ selected, count, onToggle, onClear, onStart }: Props) {
+export function SetPicker({ groups, selected, count, onToggle, onClear, onStart }: Props) {
+  const shown = GROUPS.filter((g) => groups.includes(g.id));
   return (
     <div className="p-5 sm:p-8">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
@@ -31,8 +36,8 @@ export function SetPicker({ selected, count, onToggle, onClear, onStart }: Props
         </button>
       </div>
 
-      <div className="mt-6 grid gap-8 md:grid-cols-2">
-        {GROUPS.map((g) => (
+      <div className={`mt-6 grid gap-8 ${shown.length > 1 ? "md:grid-cols-2" : ""}`}>
+        {shown.map((g) => (
           <fieldset key={g.id}>
             <legend className="mb-3 flex items-baseline gap-3">
               <span lang="ja" className="jp text-jp text-ink">{g.jp}</span>

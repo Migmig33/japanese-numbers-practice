@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  buildNotes, buildNumbers, buildTiles, checkBuild, chunksFor, kanjiFor, readingFor, type BuildMode, type Tile,
+  buildNotes, buildNumbers, buildTiles, checkBuild, chunksFor, kanjiFor, readingFor, type Tile,
 } from "@/lib/compose";
 import { isoDate, recordRound, updateProgress, useProgress } from "@/lib/progress";
 import { levelForXp, nextMultiplier, scoreAnswer, type AnswerScore } from "@/lib/scoring";
@@ -40,9 +40,8 @@ const reviewItem = (n: number, notes: string[]): ReviewItem => ({
  * "Build the number": the question is a number in digits; the learner taps tiles in
  * order to write it in kanji (百 二) or to say it in romaji (hyaku ni).
  */
-export function NumberBuilder({ defaultMode = "kanji" }: { defaultMode?: BuildMode }) {
+export function NumberBuilder() {
   const { progress } = useProgress();
-  const [mode, setMode] = useState<BuildMode>(defaultMode);
   const [range, setRange] = useState<Range>(999);
   const [phase, setPhase] = useState<Phase>("picking");
   const [round, setRound] = useState<Round>(() => NEW_ROUND([]));
@@ -77,7 +76,7 @@ export function NumberBuilder({ defaultMode = "kanji" }: { defaultMode?: BuildMo
   }, [phase, round.index, round.queue]);
 
   const ask = (queue: number[], index: number) => {
-    setTiles(buildTiles(queue[index]!, mode));
+    setTiles(buildTiles(queue[index]!));
     setPicked([]);
     setPhase("question");
   };
@@ -97,11 +96,11 @@ export function NumberBuilder({ defaultMode = "kanji" }: { defaultMode?: BuildMo
     (skip: boolean) => {
       if (phase !== "question" || n === undefined) return;
       const labels = picked.map((t) => t.label);
-      const correct = !skip && checkBuild(n, mode, labels);
+      const correct = !skip && checkBuild(n, labels);
       const ms = performance.now() - shownAt.current;
       // Speed bonus per tile, so long numbers aren't penalised for having more pieces.
       const score = scoreAnswer({ correct, ms: ms / chunksFor(n).length, streak: round.streak });
-      const notes = buildNotes(n, mode, labels);
+      const notes = buildNotes(n, labels);
 
       setRound((r) => ({
         ...r,
@@ -112,7 +111,7 @@ export function NumberBuilder({ defaultMode = "kanji" }: { defaultMode?: BuildMo
         results: [...r.results, { n, correct }],
       }));
       if (!correct) setMissed((m) => (m.some((i) => i.id === `build-${n}`) ? m : [...m, reviewItem(n, notes)]));
-      setLast({ score, given: skip ? "" : labels.join(mode === "kanji" ? "" : " "), notes });
+      setLast({ score, given: skip ? "" : labels.join(""), notes });
       setAnswerCount((c) => c + 1);
       if (!correct) setMissCount((c) => c + 1);
       setAnnouncement(
@@ -122,7 +121,7 @@ export function NumberBuilder({ defaultMode = "kanji" }: { defaultMode?: BuildMo
       );
       setPhase(correct ? "correct" : "wrong");
     },
-    [phase, n, picked, mode, round.streak],
+    [phase, n, picked, round.streak],
   );
 
   const next = () => {
@@ -151,7 +150,7 @@ export function NumberBuilder({ defaultMode = "kanji" }: { defaultMode?: BuildMo
     phase === "correct" ? "correct" : phase === "wrong" ? "wrong" : round.streak >= 3 ? "streak" : "idle";
   const locked = phase !== "question";
   const correctCount = round.results.filter((r) => r.correct).length;
-  const tileText = mode === "kanji" ? "jp text-jp" : "font-display text-[22px] font-black";
+  const tileText = "jp text-jp";
 
   return (
     <section aria-label="Build the number quiz" className="relative overflow-hidden rounded-card border border-hairline bg-card">
@@ -159,41 +158,12 @@ export function NumberBuilder({ defaultMode = "kanji" }: { defaultMode?: BuildMo
 
       {phase === "picking" && (
         <div className="p-5 sm:p-8">
-          <h2 className="font-display text-[26px] text-primary">Build the number</h2>
+          <h2 className="font-display text-[26px] text-primary">Spell the number</h2>
           <p className="mt-1 text-ink/80">
-            You&apos;ll see a number in digits. Tap the tiles in order to write it — twelve numbers a round.
+            You&apos;ll see a number in digits. Tap the characters in order to write it out — 102 is{" "}
+            <span lang="ja" className="jp text-[22px] text-ink">百二</span>, with nothing for the zero and no 一 in
+            front. Twelve numbers a round.
           </p>
-
-          <fieldset className="mt-6">
-            <legend className="mb-3 font-bold text-ink">Build with</legend>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {(
-                [
-                  { id: "kanji", sample: "百二", sampleLang: "ja", title: "Kanji tiles", body: "Write it the way it's written." },
-                  { id: "romaji", sample: "hyaku ni", sampleLang: "en", title: "Romaji tiles", body: "Put the spoken words in order." },
-                ] as const
-              ).map((o) => (
-                <button
-                  key={o.id}
-                  type="button"
-                  aria-pressed={mode === o.id}
-                  onClick={() => setMode(o.id)}
-                  className={`rounded-card border-2 p-4 text-left transition-colors ${
-                    mode === o.id ? "border-primary bg-primary/5" : "border-hairline hover:border-primary"
-                  }`}
-                >
-                  <span
-                    lang={o.sampleLang}
-                    className={o.id === "kanji" ? "jp block text-jp text-ink" : "block font-display text-[32px] leading-[48px] font-black text-ink"}
-                  >
-                    {o.sample}
-                  </span>
-                  <span className="mt-2 block font-bold text-primary">{o.title}</span>
-                  <span className="block text-[15px] text-muted">{o.body}</span>
-                </button>
-              ))}
-            </div>
-          </fieldset>
 
           <fieldset className="mt-6">
             <legend className="mb-3 font-bold text-ink">Numbers up to</legend>
@@ -247,7 +217,7 @@ export function NumberBuilder({ defaultMode = "kanji" }: { defaultMode?: BuildMo
               </div>
 
               <p id="build-label" className="mt-5 mb-2 font-bold text-ink">
-                {mode === "kanji" ? "Write it in kanji" : "Say it in romaji"} — tap the tiles in order
+                Write it in kanji — tap the characters in order
               </p>
               <div
                 aria-labelledby="build-label"
@@ -259,7 +229,7 @@ export function NumberBuilder({ defaultMode = "kanji" }: { defaultMode?: BuildMo
                   <button
                     key={t.key}
                     type="button"
-                    lang={mode === "kanji" ? "ja" : "en"}
+                    lang="ja"
                     disabled={locked}
                     onClick={() => unpick(t.key)}
                     aria-label={`Remove ${t.label}, position ${i + 1}`}
@@ -277,7 +247,7 @@ export function NumberBuilder({ defaultMode = "kanji" }: { defaultMode?: BuildMo
                     <button
                       key={t.key}
                       type="button"
-                      lang={mode === "kanji" ? "ja" : "en"}
+                      lang="ja"
                       disabled={locked || used}
                       aria-hidden={used || undefined}
                       onClick={() => pick(t)}

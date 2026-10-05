@@ -58,8 +58,8 @@ export const PAGES: Record<PageKey, PageInfo> = {
     name: "Japanese number kanji writing",
     title: "Write Japanese Numbers in Kanji — Build and Trace Practice",
     description:
-      "Practise writing Japanese numbers: see a number like 102, build it as 百二 from kanji or romaji tiles, then trace 一 to 十, 百 and 千 with numbered stroke starts.",
-    blurb: "Build numbers like 102 from kanji tiles, then trace each character.",
+      "Practise writing Japanese numbers: spell 102 out as 百二 character by character, then trace 一 to 十, 百 and 千 with numbered stroke starts.",
+    blurb: "Spell numbers like 102 out in kanji, then trace each character.",
     glyph: "九",
   },
   privacy: {

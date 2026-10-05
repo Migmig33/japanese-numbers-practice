@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  acceptableReadings, answerKanji, answerReading, buildNotes, buildNumbers, buildQuestions, buildTiles, checkBuild,
+  answerKanji, answerReading, buildNotes, buildNumbers, buildQuestions, buildTiles, checkBuild,
   checkChoice, choiceNotes, chunksFor, kanjiFor, nativeQuestion, numberQuestion, OPTION_COUNT, readingFor,
 } from "./compose";
 
@@ -33,11 +33,6 @@ describe("chunks", () => {
     expect(readingFor(8300)).toBe("hassen sanbyaku");
   });
 
-  it("lets only the ones place use its alternate reading", () => {
-    expect(acceptableReadings(304)).toEqual(["sanbyakuyon", "sanbyakushi"]);
-    expect(acceptableReadings(740)).toEqual(["nanahyakuyonjuu"]);
-  });
-
   it("rejects out-of-range numbers", () => {
     expect(() => chunksFor(0)).toThrow();
     expect(() => chunksFor(10000)).toThrow();
@@ -45,19 +40,12 @@ describe("chunks", () => {
 });
 
 describe("checkBuild", () => {
-  it("kanji must match exactly", () => {
-    expect(checkBuild(102, "kanji", ["百", "二"])).toBe(true);
-    expect(checkBuild(102, "kanji", ["一", "百", "二"])).toBe(false);
-    expect(checkBuild(102, "kanji", ["百", "〇", "二"])).toBe(false);
-    expect(checkBuild(102, "kanji", [])).toBe(false);
-  });
-
-  it("romaji accepts either ones reading and rejects the classic mistakes", () => {
-    expect(checkBuild(102, "romaji", ["hyaku", "ni"])).toBe(true);
-    expect(checkBuild(304, "romaji", ["sanbyaku", "shi"])).toBe(true);
-    expect(checkBuild(600, "romaji", ["roku", "hyaku"])).toBe(false);
-    expect(checkBuild(600, "romaji", ["roppyaku"])).toBe(true);
-    expect(checkBuild(1000, "romaji", ["ichi", "sen"])).toBe(false);
+  it("must match the kanji exactly", () => {
+    expect(checkBuild(102, ["百", "二"])).toBe(true);
+    expect(checkBuild(102, ["一", "百", "二"])).toBe(false);
+    expect(checkBuild(102, ["百", "〇", "二"])).toBe(false);
+    expect(checkBuild(102, ["二", "百"])).toBe(false);
+    expect(checkBuild(102, [])).toBe(false);
   });
 });
 
@@ -66,41 +54,35 @@ describe("tiles", () => {
     for (let s = 0; s < 200; s++) {
       const rng = seeded(s);
       const [n] = buildNumbers(1, 9999, rng);
-      for (const mode of ["kanji", "romaji"] as const) {
-        const tiles = buildTiles(n!, mode, rng);
-        const labels = tiles.map((t) => t.label);
-        const pieces = mode === "kanji" ? [...kanjiFor(n!)] : readingFor(n!).split(" ");
-        const pool = [...labels];
-        for (const p of pieces) {
-          const i = pool.indexOf(p);
-          expect(i, `${n} ${mode} missing ${p}`).toBeGreaterThanOrEqual(0);
-          pool.splice(i, 1);
-        }
-        expect(tiles.length).toBeLessThanOrEqual(Math.max(9, pieces.length + 3));
-        expect(new Set(tiles.map((t) => t.key)).size).toBe(tiles.length);
+      const tiles = buildTiles(n!, rng);
+      const labels = tiles.map((t) => t.label);
+      const pieces = [...kanjiFor(n!)];
+      const pool = [...labels];
+      for (const p of pieces) {
+        const i = pool.indexOf(p);
+        expect(i, `${n} missing ${p}`).toBeGreaterThanOrEqual(0);
+        pool.splice(i, 1);
       }
+      expect(tiles.length).toBeLessThanOrEqual(Math.max(9, pieces.length + 3));
+      expect(new Set(tiles.map((t) => t.key)).size).toBe(tiles.length);
     }
   });
 
-  it("set the 一 and 〇 traps for 102 in kanji", () => {
-    const labels = buildTiles(102, "kanji", seeded(1)).map((t) => t.label);
+  it("set the 一 and 〇 traps for 102", () => {
+    const labels = buildTiles(102, seeded(1)).map((t) => t.label);
     expect(labels).toContain("一");
     expect(labels).toContain("〇");
   });
 
   it("set the 一 trap when the tens digit is 1", () => {
-    expect(buildTiles(316, "kanji", seeded(1)).map((t) => t.label)).toContain("一");
+    expect(buildTiles(316, seeded(1)).map((t) => t.label)).toContain("一");
   });
 
-  it("set the roku + hyaku trap for 600 in romaji", () => {
-    const labels = buildTiles(600, "romaji", seeded(1)).map((t) => t.label);
-    expect(labels).toEqual(expect.arrayContaining(["roppyaku", "roku", "hyaku"]));
-  });
-
-  it("never offer an alternate reading that would also be correct", () => {
+  it("offer only characters, never readings", () => {
     for (let s = 0; s < 50; s++) {
-      expect(buildTiles(304, "romaji", seeded(s)).map((t) => t.label)).not.toContain("shi");
-      expect(buildTiles(7, "romaji", seeded(s)).map((t) => t.label)).not.toContain("shichi");
+      for (const label of buildTiles(600, seeded(s)).map((t) => t.label)) {
+        expect(label).toMatch(/^[一二三四五六七八九十百千〇]$/);
+      }
     }
   });
 });
@@ -200,12 +182,12 @@ describe("rounds and notes", () => {
   });
 
   it("explains zeros, a stray 一 and sound changes", () => {
-    expect(buildNotes(102, "kanji", ["百", "〇", "二"]).join(" ")).toContain("nothing for the zero");
-    expect(buildNotes(102, "kanji", ["一", "百", "二"]).join(" ")).toContain("no 一 in front");
-    expect(buildNotes(101, "kanji", ["一", "百", "一"]).join(" ")).toContain("no 一 in front");
-    expect(buildNotes(316, "kanji", ["三", "百", "一", "十", "六"]).join(" ")).toContain("no 一 in front");
-    expect(buildNotes(101, "kanji", ["百", "二"]).join(" ")).not.toContain("no 一 in front");
-    expect(buildNotes(600, "romaji", ["roku", "hyaku"]).join(" ")).toContain("roppyaku");
-    expect(buildNotes(42, "romaji", ["yon"])[0]).toContain("place by place");
+    expect(buildNotes(102, ["百", "〇", "二"]).join(" ")).toContain("nothing for the zero");
+    expect(buildNotes(102, ["一", "百", "二"]).join(" ")).toContain("no 一 in front");
+    expect(buildNotes(101, ["一", "百", "一"]).join(" ")).toContain("no 一 in front");
+    expect(buildNotes(316, ["三", "百", "一", "十", "六"]).join(" ")).toContain("no 一 in front");
+    expect(buildNotes(101, ["百", "二"]).join(" ")).not.toContain("no 一 in front");
+    expect(buildNotes(600, ["六", "百"]).join(" ")).toContain("roppyaku");
+    expect(buildNotes(42, ["四"])[0]).toContain("place by place");
   });
 });

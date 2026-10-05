@@ -11,7 +11,7 @@ import { QuestionCard } from "./QuestionCard";
 import { QuizHud } from "./QuizHud";
 import { ResultBar } from "./ResultBar";
 import { Sennin, type SenninState } from "./Sennin";
-import { SetPicker } from "./SetPicker";
+import { SetPicker, type SetGroup } from "./SetPicker";
 import { SummaryCard } from "./SummaryCard";
 
 type Phase = "picking" | "question" | "correct" | "wrong" | "summary";
@@ -29,7 +29,7 @@ type Round = {
 
 const NEW_ROUND = (queue: Item[]): Round => ({ queue, index: 0, streak: 0, longestStreak: 0, score: 0, results: [] });
 
-export function QuizWidget({ defaultSets, label }: { defaultSets: SetId[]; label: string }) {
+export function QuizWidget({ groups, defaultSets, label }: { groups: readonly SetGroup[]; defaultSets: SetId[]; label: string }) {
   const { progress } = useProgress();
   const [selected, setSelected] = useState<ReadonlySet<SetId>>(() => new Set(defaultSets));
   const [phase, setPhase] = useState<Phase>("picking");
@@ -140,6 +140,7 @@ export function QuizWidget({ defaultSets, label }: { defaultSets: SetId[]; label
 
       {phase === "picking" && (
         <SetPicker
+          groups={groups}
           selected={selected}
           count={pool.length}
           onToggle={toggle}
