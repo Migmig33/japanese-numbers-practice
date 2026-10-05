@@ -9,6 +9,7 @@ import {
   buildModeRound, checkAnswer, gradeFor, MODE_IDS, MODES, type ModeId, type Question,
 } from "@/lib/modes";
 import type { Item, ReviewItem } from "@/lib/types";
+import { DifficultyBadge, GradeCard } from "./GradeCard";
 import { QuizHud } from "./QuizHud";
 import { ResultBar } from "./ResultBar";
 import { Sennin, type SenninState } from "./Sennin";
@@ -212,8 +213,9 @@ export function NumbersQuiz() {
                     aria-describedby={`mode-${id}-blurb`}
                     className="flex h-full w-full flex-col rounded-card border-2 border-hairline bg-card p-5 text-left transition-colors hover:border-primary"
                   >
-                    <span className="flex items-baseline gap-2">
+                    <span className="flex flex-wrap items-center gap-2">
                       <span className="font-display text-[19px] font-black text-ink">{m.name}</span>
+                      <DifficultyBadge level={m.difficulty} />
                       {best !== undefined && (
                         <span className="ml-auto rounded-full bg-accent px-2.5 py-0.5 font-display text-[14px] font-black text-ink">
                           Best {gradeFor(best).letter}
@@ -421,40 +423,12 @@ export function NumbersQuiz() {
           missed={missed}
           playAgainLabel={`${MODES[mode].name} again`}
           backLabel="All three"
-          note={<GradeCard mode={mode} accuracy={accuracy} correct={correctCount} total={round.results.length} />}
+          note={<GradeCard modeName={MODES[mode].name} accuracy={accuracy} correct={correctCount} total={round.results.length} />}
           onPlayAgain={() => start(mode)}
           onBack={() => setPhase("picking")}
         />
       )}
     </section>
-  );
-}
-
-/** The round's grade, shown on the summary for whichever mode was played. */
-function GradeCard({ mode, accuracy, correct, total }: { mode: ModeId; accuracy: number; correct: number; total: number }) {
-  const grade = gradeFor(accuracy);
-  const good = accuracy >= 0.7;
-  return (
-    <div
-      className={`flex flex-wrap items-center justify-center gap-x-5 gap-y-2 rounded-card border-2 px-5 py-4 ${
-        good ? "border-correct/40 bg-correct/10" : "border-accent/50 bg-accent/10"
-      }`}
-    >
-      <span
-        aria-hidden="true"
-        className={`font-display text-[52px] leading-none font-black ${good ? "text-correct" : "text-ink"}`}
-      >
-        {grade.letter}
-      </span>
-      <span className="text-left">
-        <span className="block font-display text-[19px] font-black text-ink">
-          {grade.label} — {MODES[mode].name}
-        </span>
-        <span className="block text-[15px] text-muted tabular-nums">
-          {correct} of {total} right, {Math.round(accuracy * 100)}%
-        </span>
-      </span>
-    </div>
   );
 }
 

@@ -48,8 +48,8 @@ export const PAGES: Record<PageKey, PageInfo> = {
     name: "Telling time in Japanese",
     title: "Telling Time in Japanese — Hours, Minutes and Clock Quiz",
     description:
-      "Practice telling time in Japanese: yoji, kuji, ippun, juppun, han, gozen and gogo. Type the readings, then set a clock to Japanese times.",
-    blurb: "Hours, minutes, half past, a.m. and p.m. — then set the clock yourself.",
+      "Practice telling time in Japanese three ways: pick the time a clock phrase means, drag the hands to match, or type the reading — yoji, kuji, ippun, juppun, han, gozen and gogo.",
+    blurb: "Three ways to practise: read it, set the clock, or say it.",
     glyph: "四時",
   },
   writing: {

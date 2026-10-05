@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { ClockDrill } from "@/components/ClockDrill";
 import { Faq, type FaqItem } from "@/components/Faq";
 import { JsonLd } from "@/components/JsonLd";
 import { ContentPage } from "@/components/PageShell";
-import { QuizWidget } from "@/components/QuizWidget";
+import { TimeQuiz } from "@/components/TimeQuiz";
 import { ReferenceTable } from "@/components/ReferenceTable";
 import { RelatedCards } from "@/components/RelatedCards";
 import { ITEMS, itemsInSet } from "@/lib/items";
@@ -60,18 +59,14 @@ export default function TimePage() {
       page="time"
       intro={
         <p>
-          Japanese time is mostly regular, with a handful of readings you just have to know: yoji, kuji, shichiji and the
-          pun minutes. Drill the readings in the quiz, then read a Japanese time and set the clock to match.
+          Japanese time is mostly regular, with a handful of readings you just have to know: yoji, kuji, shichiji and
+          the pun minutes. Practise them three ways, all open from the start — pick the time a clock phrase means, drag
+          the hands to match it, or type the reading from memory. Each round of twelve ends with a grade.
         </p>
       }
       widget={
         <>
-          <QuizWidget
-            groups={["time"]}
-            defaultSets={["hours", "minutes", "half", "ampm", "question"]}
-            label="Telling time quiz"
-          />
-          <ClockDrill />
+          <TimeQuiz />
           <JsonLd data={quizJsonLd("time", ["Telling time in Japanese", "Japanese hours", "Japanese minutes"])} />
         </>
       }

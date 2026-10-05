@@ -1,6 +1,6 @@
 import { useCallback, useSyncExternalStore } from "react";
 import { levelForXp } from "./scoring";
-import { isModeId, type ModeId } from "./modes";
+
 
 export const STORAGE_KEY = "sennin.v1";
 
@@ -15,8 +15,8 @@ export type Progress = {
   roundsPlayed: number;
   /** ISO dates (YYYY-MM-DD) with at least one finished round, sorted, unique. */
   days: string[];
-  /** Best accuracy so far in each numbers-quiz mode, 0–1. */
-  grades: Partial<Record<ModeId, number>>;
+  /** Best accuracy so far in each quiz mode, keyed by mode id, 0–1. */
+  grades: Record<string, number>;
 };
 
 export type StorageLike = Pick<Storage, "getItem" | "setItem">;
@@ -46,10 +46,10 @@ export function parseProgress(raw: string | null): Progress {
       items[id] = { attempts: num(attempts), correct: Math.min(num(correct), num(attempts)) };
     }
   }
-  const grades: Partial<Record<ModeId, number>> = {};
+  const grades: Record<string, number> = {};
   if (d.grades && typeof d.grades === "object") {
     for (const [k, v] of Object.entries(d.grades as Record<string, unknown>)) {
-      if (isModeId(k) && typeof v === "number" && v >= 0 && v <= 1) grades[k] = v;
+      if (/^[a-z][a-z-]{1,23}$/.test(k) && typeof v === "number" && v >= 0 && v <= 1) grades[k] = v;
     }
   }
   const xp = num(d.xp);
@@ -103,7 +103,7 @@ export function recordRound(progress: Progress, { score, date }: { score: number
 }
 
 /** A grade is only ever replaced by a better one. */
-export function recordGrade(progress: Progress, mode: ModeId, accuracy: number): Progress {
+export function recordGrade(progress: Progress, mode: string, accuracy: number): Progress {
   const best = progress.grades[mode] ?? 0;
   if (!(accuracy > best)) return progress;
   return { ...progress, grades: { ...progress.grades, [mode]: accuracy } };

@@ -18,8 +18,12 @@ export type ModeId = (typeof MODE_IDS)[number];
 /** Numbers whose zeros are the lesson, guaranteed per round. */
 export const ROUND_NUMBERS_PER_ROUND = 3;
 
+/** How hard a mode feels, shown on its card so a learner can choose. */
+export type Difficulty = "Easy" | "Medium" | "Hard";
+
 export type Mode = {
   id: ModeId;
+  difficulty: Difficulty;
   name: string;
   /** What the learner does, in their words. */
   task: string;
@@ -31,6 +35,7 @@ export type Mode = {
 export const MODES: Record<ModeId, Mode> = {
   build: {
     id: "build",
+    difficulty: "Easy",
     name: "Build it",
     task: "Pick the kanji for each place",
     blurb: "A number in digits, four choices per place — each one labelled with its reading. The gentlest way in.",
@@ -39,6 +44,7 @@ export const MODES: Record<ModeId, Mode> = {
   },
   identify: {
     id: "identify",
+    difficulty: "Medium",
     name: "Read it",
     task: "Pick the number the kanji means",
     blurb: "The other way round, and up into 万. No readings to lean on this time.",
@@ -47,6 +53,7 @@ export const MODES: Record<ModeId, Mode> = {
   },
   recall: {
     id: "recall",
+    difficulty: "Hard",
     name: "Say it",
     task: "Type the reading",
     blurb: "No options at all, all the way to 十億. The hardest of the three.",

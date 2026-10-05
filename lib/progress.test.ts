@@ -94,7 +94,9 @@ describe("grades", () => {
     const s = memoryStorage();
     saveProgress(recordGrade(emptyProgress(), "identify", 0.75), s);
     expect(loadProgress(s).grades.identify).toBe(0.75);
-    expect(parseProgress(JSON.stringify({ v: 1, grades: { nope: 0.5, build: 2, recall: "x" } })).grades).toEqual({});
+    // Keys are checked by shape so both quizzes can share the store; values must be a ratio.
+    expect(parseProgress(JSON.stringify({ v: 1, grades: { "time-say": 0.5 } })).grades).toEqual({ "time-say": 0.5 });
+    expect(parseProgress(JSON.stringify({ v: 1, grades: { build: 2, recall: "x", "BAD KEY": 0.5, "": 1 } })).grades).toEqual({});
     expect(parseProgress(JSON.stringify({ v: 1 })).grades).toEqual({});
   });
 });
