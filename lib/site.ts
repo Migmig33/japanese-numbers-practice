@@ -8,7 +8,9 @@ export const DEVELOPER = "kupdevs";
 export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "kupdevs@gmail.com";
 export const LAUNCH_YEAR = 2026;
 
-export type PageKey = "home" | "hiragana" | "numbers" | "time" | "writing" | "particles" | "progress" | "privacy" | "terms";
+export type PageKey =
+  | "home" | "hiragana" | "numbers" | "time" | "writing" | "particles" | "progress"
+  | "about" | "contact" | "privacy" | "terms";
 
 export type PageInfo = {
   path: string;
@@ -81,6 +83,26 @@ export const PAGES: Record<PageKey, PageInfo> = {
       "What every beginner particle does, with short example sentences and two quizzes: fill the gap, or build the sentence piece by piece.",
     blurb: "は, が, を, に, で — what each one does, with a quiz.",
     glyph: "は",
+  },
+  about: {
+    path: "/about",
+    nav: "About",
+    name: "About Sennin",
+    title: "About Sennin — Who Makes It and How the Japanese Is Checked",
+    description:
+      "Why Sennin exists, how its readings are prepared and checked, what it deliberately leaves out, and who builds it.",
+    blurb: "Why the site exists and how it is made.",
+    glyph: "仙人",
+  },
+  contact: {
+    path: "/contact",
+    nav: "Contact",
+    name: "Contact",
+    title: "Contact Sennin — Corrections, Bugs and Questions",
+    description:
+      "How to reach the person who builds Sennin: corrections to a reading, bug reports, suggestions and questions about the site.",
+    blurb: "Corrections, bugs and questions.",
+    glyph: "文",
   },
   privacy: {
     path: "/privacy-policy",

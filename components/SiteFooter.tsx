@@ -32,7 +32,8 @@ const COLUMNS: { heading: string; links: { label: string; href: string }[] }[] =
     heading: "Sennin",
     links: [
       { label: "Home", href: "/" },
-      { label: "How it works", href: "/#how-it-works" },
+      { label: PAGES.about.name, href: PAGES.about.path },
+      { label: PAGES.contact.name, href: PAGES.contact.path },
       { label: PAGES.privacy.name, href: PAGES.privacy.path },
       { label: PAGES.terms.name, href: PAGES.terms.path },
     ],
