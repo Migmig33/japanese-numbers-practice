@@ -1,0 +1,13 @@
+export type SetId =
+  | "ones" | "teens-tens" | "hundreds" | "thousands" | "tenthousands" | "native"
+  | "hours" | "minutes" | "half" | "ampm" | "question";
+
+export type Item = {
+  id: string;
+  jp: string;            // 六百
+  readings: string[];    // every accepted reading, normalized form
+  set: SetId;
+  kind: "number" | "hour" | "minute" | "modifier";
+  value?: number;
+  note?: string;         // rule shown when the user misses it
+};
