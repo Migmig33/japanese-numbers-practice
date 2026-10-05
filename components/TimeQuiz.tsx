@@ -5,7 +5,7 @@ import { gradeFor } from "@/lib/modes";
 import { isoDate, recordGrade, recordRound, updateProgress, useProgress } from "@/lib/progress";
 import { levelForXp, nextMultiplier, scoreAnswer, type AnswerScore } from "@/lib/scoring";
 import { requeueMissed, ROUND_LENGTH } from "@/lib/srs";
-import type { ClockTime } from "@/lib/time";
+import { timeKana, type ClockTime } from "@/lib/time";
 import {
   buildTimeRound, checkTimeAnswer, TIME_MODE_IDS, TIME_MODES, type TimeModeId, type TimeQuestion,
 } from "@/lib/timequiz";
@@ -331,6 +331,7 @@ export function TimeQuiz() {
               score={last.score}
               given={last.given}
               givenLabel={mode === "time-say" ? "you typed" : mode === "time-set" ? "you set" : "you chose"}
+              kana={timeKana(question.time)}
               notes={last.note ? [last.note] : []}
               answer={
                 <>

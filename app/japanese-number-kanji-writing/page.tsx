@@ -4,7 +4,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { KanjiTracer } from "@/components/KanjiTracer";
 import { ContentPage } from "@/components/PageShell";
 import { RelatedCards } from "@/components/RelatedCards";
-import { kanjiFor, readingFor } from "@/lib/compose";
+import { kanaFor, kanjiFor, readingFor } from "@/lib/compose";
 import { quizJsonLd } from "@/lib/jsonld";
 import { pageMetadata } from "@/lib/site";
 import { KANJI_GUIDES } from "@/lib/strokes";
@@ -70,6 +70,7 @@ Trace each number kanji over its guide. The numbered dots show where every strok
                 <tr className="border-b border-hairline text-[14px] text-muted">
                   <th scope="col" className="px-5 py-2 font-bold">Number</th>
                   <th scope="col" className="px-5 py-2 font-bold">Kanji</th>
+                  <th scope="col" className="px-5 py-2 font-bold">Kana</th>
                   <th scope="col" className="px-5 py-2 font-bold">Reading</th>
                 </tr>
               </thead>
@@ -78,6 +79,7 @@ Trace each number kanji over its guide. The numbered dots show where every strok
                   <tr key={n} className="border-b border-hairline last:border-b-0">
                     <td className="px-5 py-2 font-bold text-ink tabular-nums">{n.toLocaleString("en")}</td>
                     <td lang="ja" className="jp px-5 py-1 text-jp whitespace-nowrap text-ink">{kanjiFor(n)}</td>
+                    <td lang="ja" className="jp px-5 py-2 text-[20px] text-ink">{kanaFor(n)}</td>
                     <td className="px-5 py-2 font-bold text-primary">{readingFor(n)}</td>
                   </tr>
                 ))}
@@ -92,6 +94,7 @@ Trace each number kanji over its guide. The numbered dots show where every strok
                 <tr className="border-b border-hairline text-[14px] text-muted">
                   <th scope="col" className="px-5 py-2 font-bold">Number</th>
                   <th scope="col" className="px-5 py-2 font-bold">Kanji</th>
+                  <th scope="col" className="px-5 py-2 font-bold">Kana</th>
                   <th scope="col" className="px-5 py-2 font-bold">Reading</th>
                   <th scope="col" className="px-5 py-2 font-bold">Strokes</th>
                 </tr>
@@ -101,6 +104,7 @@ Trace each number kanji over its guide. The numbered dots show where every strok
                   <tr key={g.char} className="border-b border-hairline last:border-b-0">
                     <td className="px-5 py-2 font-bold text-ink tabular-nums">{g.value.toLocaleString("en")}</td>
                     <td lang="ja" className="jp px-5 py-1 text-jp text-ink">{g.char}</td>
+                    <td lang="ja" className="jp px-5 py-2 text-[20px] text-ink">{kanaFor(g.value)}</td>
                     <td className="px-5 py-2 font-bold text-primary">{g.reading}</td>
                     <td className="px-5 py-2 font-bold text-ink tabular-nums">{g.strokes.length}</td>
                   </tr>

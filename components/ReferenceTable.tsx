@@ -19,6 +19,7 @@ export function ReferenceTable({ caption, items, valueHeader = "Number", value, 
           <tr className="border-b border-hairline text-[14px] text-muted">
             <th scope="col" className="px-5 py-2 font-bold">{valueHeader}</th>
             <th scope="col" className="px-5 py-2 font-bold">Kanji</th>
+            <th scope="col" className="px-5 py-2 font-bold">Kana</th>
             <th scope="col" className="px-5 py-2 font-bold">Reading</th>
             {showNotes && <th scope="col" className="px-5 py-2 font-bold max-sm:hidden">Why</th>}
           </tr>
@@ -28,6 +29,7 @@ export function ReferenceTable({ caption, items, valueHeader = "Number", value, 
             <tr key={i.id} className="border-b border-hairline last:border-b-0">
               <td className="px-5 py-2 font-bold text-ink tabular-nums">{fmt(i)}</td>
               <td lang="ja" className="jp px-5 py-1 text-jp whitespace-nowrap text-ink">{i.jp}</td>
+              <td lang="ja" className="jp px-5 py-2 text-[20px] whitespace-nowrap text-ink">{i.kana.join(" / ")}</td>
               <td className="px-5 py-2 font-bold text-primary">{i.readings.join(" / ")}</td>
               {showNotes && <td className="px-5 py-2 text-[15px] leading-normal text-muted max-sm:hidden">{i.note ?? ""}</td>}
             </tr>

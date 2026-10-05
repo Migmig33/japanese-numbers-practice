@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { answerKanji, answerReading, checkChoice, choiceNotes } from "@/lib/compose";
+import { answerKana, answerKanji, answerReading, checkChoice, choiceNotes } from "@/lib/compose";
+import { numberKana } from "@/lib/bignumbers";
 import { isoDate, recordAnswer, recordGrade, recordRound, updateProgress, useProgress } from "@/lib/progress";
 import { levelForXp, nextMultiplier, scoreAnswer, type AnswerScore } from "@/lib/scoring";
 import { requeueMissed, ROUND_LENGTH } from "@/lib/srs";
@@ -33,9 +34,11 @@ const NEW_ROUND = (queue: Question[]): Round => ({
 const num = (n: number) => n.toLocaleString("en");
 
 /** How a question's answer reads, for feedback and the review list. */
-function answerOf(q: Question): { kanji: string; reading: string; prompt: string } {
-  if (q.kind === "build") return { kanji: answerKanji(q), reading: answerReading(q), prompt: q.prompt };
-  return { kanji: q.kanji, reading: q.reading, prompt: num(q.n) };
+function answerOf(q: Question): { kanji: string; reading: string; kana: string; prompt: string } {
+  if (q.kind === "build") {
+    return { kanji: answerKanji(q), reading: answerReading(q), kana: answerKana(q), prompt: q.prompt };
+  }
+  return { kanji: q.kanji, reading: q.reading, kana: numberKana(q.n), prompt: num(q.n) };
 }
 
 function reviewItem(q: Question, notes: string[]): ReviewItem {
@@ -397,6 +400,7 @@ export function NumbersQuiz() {
               score={last.score}
               given={last.given}
               givenLabel={question.kind === "recall" ? "you typed" : "you chose"}
+              kana={answer.kana}
               notes={last.notes}
               answer={
                 <>

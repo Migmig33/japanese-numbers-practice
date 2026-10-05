@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ITEMS_BY_ID } from "./items";
 import {
-  digitalTime, minuteKanji, minuteReading, randomTime, sameTime, timeKanji, timeReading,
+  digitalTime, minuteKanji, minuteReading, randomTime, sameTime, timeKana, timeKanji, timeReading,
 } from "./time";
 
 function seeded(seed: number) {
@@ -109,5 +109,25 @@ describe("randomTime", () => {
     expect(minutes.has(0)).toBe(true);
     expect(minutes.has(30)).toBe(true);
     expect([...minutes].some((m) => m % 5 !== 0)).toBe(true);
+  });
+});
+
+describe("timeKana", () => {
+  it("writes the time in hiragana", () => {
+    expect(timeKana({ hour: 4, minute: 0 })).toBe("よじ");
+    expect(timeKana({ hour: 9, minute: 0 })).toBe("くじ");
+    expect(timeKana({ hour: 3, minute: 30 })).toBe("さんじ はん");
+    expect(timeKana({ hour: 1, minute: 29 })).toBe("いちじ にじゅうきゅうふん");
+    expect(timeKana({ hour: 12, minute: 5 })).toBe("じゅうにじ ごふん");
+  });
+
+  it("matches the romaji word for word, for every time", () => {
+    for (let h = 1; h <= 12; h++) {
+      for (let m = 0; m <= 59; m++) {
+        const kana = timeKana({ hour: h, minute: m });
+        expect(kana.split(" "), `${h}:${m}`).toHaveLength(timeReading({ hour: h, minute: m }).split(" ").length);
+        expect(kana, `${h}:${m}`).toMatch(/^[ぁ-ゟ ]+$/);
+      }
+    }
   });
 });

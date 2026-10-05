@@ -113,3 +113,72 @@ describe("kanjiNumber", () => {
     expect(kanjiNumber(55)).toBe("五十五");
   });
 });
+
+describe("kana readings", () => {
+  const KANA = /^[ぁ-ゟ]+$/;
+
+  it("gives every item one kana spelling per reading", () => {
+    for (const i of ITEMS) {
+      expect(i.kana, i.id).toHaveLength(i.readings.length);
+      for (const k of i.kana) expect(k, `${i.id} kana ${k}`).toMatch(KANA);
+    }
+  });
+
+  it("spells the digits", () => {
+    expect(item("ones-1").kana).toEqual(["いち"]);
+    expect(item("ones-4").kana).toEqual(["よん", "し"]);
+    expect(item("ones-7").kana).toEqual(["なな", "しち"]);
+    expect(item("ones-9").kana).toEqual(["きゅう", "く"]);
+    expect(item("ones-10").kana).toEqual(["じゅう"]);
+  });
+
+  it("carries the sound changes into kana", () => {
+    expect(item("hundreds-300").kana).toEqual(["さんびゃく"]);
+    expect(item("hundreds-600").kana).toEqual(["ろっぴゃく"]);
+    expect(item("hundreds-800").kana).toEqual(["はっぴゃく"]);
+    expect(item("thousands-3000").kana).toEqual(["さんぜん"]);
+    expect(item("thousands-8000").kana).toEqual(["はっせん"]);
+    expect(item("tenthousands-10000").kana).toEqual(["いちまん"]);
+  });
+
+  it("composes the tens", () => {
+    expect(item("teens-tens-11").kana).toEqual(["じゅういち"]);
+    expect(item("teens-tens-20").kana).toEqual(["にじゅう"]);
+    expect(item("teens-tens-34").kana).toEqual(["さんじゅうよん", "さんじゅうし"]);
+    expect(item("teens-tens-99").kana).toEqual(["きゅうじゅうきゅう", "きゅうじゅうく"]);
+  });
+
+  it("spells the irregular hours and the pun minutes", () => {
+    expect(item("hours-4").kana).toEqual(["よじ"]);
+    expect(item("hours-7").kana).toEqual(["しちじ"]);
+    expect(item("hours-9").kana).toEqual(["くじ"]);
+    expect(item("minutes-1").kana).toEqual(["いっぷん"]);
+    expect(item("minutes-6").kana).toEqual(["ろっぷん"]);
+    expect(item("minutes-8").kana).toEqual(["はっぷん", "はちふん"]);
+    expect(item("minutes-10").kana).toEqual(["じゅっぷん", "じっぷん"]);
+  });
+
+  it("lets the native words be their own kana", () => {
+    for (const i of itemsInSet("native")) expect(i.kana).toEqual([i.jp]);
+  });
+
+  it("keeps a small っ and a doubled consonant in step, both ways", () => {
+    for (const i of ITEMS) {
+      i.readings.forEach((r, n) => {
+        const k = i.kana[n]!;
+        const doubled = /([ptks])\1/.test(r);
+        expect(k.includes("っ"), `${i.id}: ${r} / ${k} disagree about っ`).toBe(doubled);
+      });
+    }
+  });
+
+  it("writes a long vowel in both scripts or neither", () => {
+    for (const i of ITEMS) {
+      i.readings.forEach((r, n) => {
+        const k = i.kana[n]!;
+        if (r.includes("uu")) expect(k, `${i.id}: ${r} / ${k}`).toContain("う");
+        if (r.includes("oo")) expect(k, `${i.id}: ${r} / ${k}`).toContain("お");
+      });
+    }
+  });
+});

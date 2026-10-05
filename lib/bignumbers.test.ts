@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { acceptableReadings, MAX_NUMBER, numberKanji, numberReading, roundNumbers } from "./bignumbers";
+import { acceptableReadings, MAX_NUMBER, numberKana, numberKanji, numberReading, roundNumbers } from "./bignumbers";
 import { matchesReading } from "./normalize";
 
 describe("numberKanji", () => {
@@ -121,5 +121,26 @@ describe("roundNumbers", () => {
       expect(big).toContain(n);
     }
     for (const n of big) expect(() => numberReading(n)).not.toThrow();
+  });
+});
+
+describe("numberKana", () => {
+  it("writes the reading in hiragana", () => {
+    expect(numberKana(1)).toBe("いち");
+    expect(numberKana(600)).toBe("ろっぴゃく");
+    expect(numberKana(3684)).toBe("さんぜん ろっぴゃく はちじゅう よん");
+    expect(numberKana(10_000)).toBe("いちまん");
+    expect(numberKana(10_000_000)).toBe("いっせんまん");
+    expect(numberKana(100_000_000)).toBe("いちおく");
+    expect(numberKana(1_000_000_000)).toBe("じゅうおく");
+    expect(numberKana(12_345)).toBe("いちまん にせん さんびゃく よんじゅう ご");
+  });
+
+  it("has a kana word for every romaji word", () => {
+    for (let s = 0; s < 200; s++) {
+      const n = 1 + Math.floor(((s * 2654435761) % 1_000_000_000));
+      expect(numberKana(n).split(" ")).toHaveLength(numberReading(n).split(" ").length);
+      expect(numberKana(n)).toMatch(/^[ぁ-ゟ ]+$/);
+    }
   });
 });

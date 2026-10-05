@@ -15,6 +15,7 @@ function item(id: string): Item {
 }
 
 const minuteItem = (m: number) => item(`minutes-${m}`);
+const kanaOf = (id: string) => item(id).kana[0]!;
 /** ni, san, yon, go — the multiplier in front of 十. */
 const digitReading = (d: number) => item(`ones-${d}`).readings[0]!;
 
@@ -31,6 +32,17 @@ export function minuteReading(m: number): string {
   // Otherwise the tens are spoken as a plain number and the ones keep their 分 form.
   const tensPart = tens === 1 ? item("ones-10").readings[0]! : digitReading(tens) + item("ones-10").readings[0]!;
   return tensPart + minuteItem(ones).readings[0]!;
+}
+
+/** Minute reading in hiragana, built the same way as the romaji. */
+export function minuteKana(m: number): string {
+  if (!Number.isInteger(m) || m < 1 || m > MAX_MINUTE) throw new Error(`minuteKana: ${m} out of range`);
+  if (m <= 10) return minuteItem(m).kana[0]!;
+  const tens = Math.floor(m / 10);
+  const ones = m % 10;
+  if (ones === 0) return kanaOf(`ones-${tens}`) + minuteItem(10).kana[0]!;
+  const tensPart = tens === 1 ? kanaOf("ones-10") : kanaOf(`ones-${tens}`) + kanaOf("ones-10");
+  return tensPart + minuteItem(ones).kana[0]!;
 }
 
 export function minuteKanji(m: number): string {
@@ -52,6 +64,14 @@ export function timeKanji({ hour, minute }: ClockTime, { han = true } = {}): str
   if (minute === 0) return h;
   if (minute === 30 && han) return `${h}${item("half-han").jp}`;
   return `${h}${minuteKanji(minute)}`;
+}
+
+export function timeKana({ hour, minute }: ClockTime, { han = true } = {}): string {
+  assertTime({ hour, minute });
+  const h = item(`hours-${hour}`).kana[0]!;
+  if (minute === 0) return h;
+  if (minute === 30 && han) return `${h} ${item("half-han").kana[0]}`;
+  return `${h} ${minuteKana(minute)}`;
 }
 
 export function timeReading({ hour, minute }: ClockTime, { han = true } = {}): string {

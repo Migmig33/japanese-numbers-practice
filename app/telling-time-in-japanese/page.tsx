@@ -8,7 +8,7 @@ import { RelatedCards } from "@/components/RelatedCards";
 import { ITEMS, itemsInSet } from "@/lib/items";
 import { quizJsonLd } from "@/lib/jsonld";
 import { pageMetadata } from "@/lib/site";
-import { minuteKanji, minuteReading } from "@/lib/time";
+import { minuteKana, minuteKanji, minuteReading } from "@/lib/time";
 import type { Item } from "@/lib/types";
 
 export function generateMetadata(): Metadata {
@@ -94,6 +94,7 @@ export default function TimePage() {
                 <tr className="border-b border-hairline text-[14px] text-muted">
                   <th scope="col" className="px-5 py-2 font-bold">Minutes</th>
                   <th scope="col" className="px-5 py-2 font-bold">Kanji</th>
+                  <th scope="col" className="px-5 py-2 font-bold">Kana</th>
                   <th scope="col" className="px-5 py-2 font-bold">Reading</th>
                 </tr>
               </thead>
@@ -102,6 +103,7 @@ export default function TimePage() {
                   <tr key={m} className="border-b border-hairline last:border-b-0">
                     <td className="px-5 py-2 font-bold text-ink tabular-nums">{m} min</td>
                     <td lang="ja" className="jp px-5 py-1 text-jp whitespace-nowrap text-ink">{minuteKanji(m)}</td>
+                    <td lang="ja" className="jp px-5 py-2 text-[20px] text-ink">{minuteKana(m)}</td>
                     <td className="px-5 py-2 font-bold text-primary">{minuteReading(m)}</td>
                   </tr>
                 ))}

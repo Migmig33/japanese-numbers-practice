@@ -6,6 +6,7 @@ export type Item = {
   id: string;
   jp: string;            // 六百
   readings: string[];    // every accepted reading, normalized form
+  kana: string[];        // the same readings in hiragana, one per reading
   set: SetId;
   kind: "number" | "hour" | "minute" | "modifier";
   value?: number;

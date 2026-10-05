@@ -13,13 +13,15 @@ type Props = {
   onContinue: () => void;
   /** Replaces the plain reading in the feedback line, e.g. kanji plus romaji. */
   answer?: React.ReactNode;
+  /** The answer in hiragana, shown under the reading. */
+  kana?: string;
   /** Overrides the note box; defaults to the item's note. */
   notes?: string[];
   givenLabel?: string;
 };
 
 /** Feedback bar that rises from the bottom of the quiz card. */
-export function ResultBar({ kind, item, score, given, onContinue, answer, notes, givenLabel = "you typed" }: Props) {
+export function ResultBar({ kind, item, score, given, onContinue, answer, kana, notes, givenLabel = "you typed" }: Props) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     buttonRef.current?.focus({ preventScroll: true });
@@ -52,6 +54,9 @@ export function ResultBar({ kind, item, score, given, onContinue, answer, notes,
             </p>
           )}
         </div>
+        {kana && (
+          <p lang="ja" className="jp mt-1 w-full text-[19px] text-muted">{kana}</p>
+        )}
         <button
           ref={buttonRef}
           type="button"

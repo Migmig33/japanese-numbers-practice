@@ -1,4 +1,4 @@
-import { chunksFor, kanjiFor, readingFor } from "./compose";
+import { chunksFor, kanaFor, kanjiFor, readingFor } from "./compose";
 
 /*
  * Numbers above 9,999. Japanese groups digits in fours, not threes: 万 is 10,000 and
@@ -39,6 +39,12 @@ function multiplierReading(m: number): string {
   return readingFor(m).replace(/ /g, "");
 }
 
+function multiplierKana(m: number): string {
+  if (m === 1) return "いち";
+  if (m === 1000) return "いっせん";
+  return kanaFor(m).replace(/ /g, "");
+}
+
 export function numberKanji(n: number): string {
   assertRange(n);
   const { oku, man, rest } = groupsOf(n);
@@ -57,6 +63,17 @@ export function numberReading(n: number): string {
   if (oku) parts.push(`${multiplierReading(oku)}oku`);
   if (man) parts.push(`${multiplierReading(man)}man`);
   if (rest) parts.push(readingFor(rest));
+  return parts.join(" ");
+}
+
+/** The same reading written in hiragana. */
+export function numberKana(n: number): string {
+  assertRange(n);
+  const { oku, man, rest } = groupsOf(n);
+  const parts: string[] = [];
+  if (oku) parts.push(`${multiplierKana(oku)}おく`);
+  if (man) parts.push(`${multiplierKana(man)}まん`);
+  if (rest) parts.push(kanaFor(rest));
   return parts.join(" ");
 }
 

@@ -39,6 +39,9 @@ export const kanjiFor = (n: number) => chunksFor(n).map((c) => c.jp).join("");
 /** Primary reading with a space between places, for display: "sanzen roppyaku hachijuu yon". */
 export const readingFor = (n: number) => chunksFor(n).map((c) => c.readings[0]).join(" ");
 
+/** The same, in hiragana: さんぜん ろっぴゃく はちじゅう よん. */
+export const kanaFor = (n: number) => chunksFor(n).map((c) => c.kana[0]).join(" ");
+
 /** A round's numbers, nudged toward the sound-change hundreds and thousands. */
 export function randomNumber(max: number, rng: () => number = Math.random, min = 10): number {
   let n = min + Math.floor(rng() * (max - min + 1));
@@ -135,6 +138,7 @@ export function nativeQuestion(value: number, rng: () => number = Math.random): 
 
 export const answerKanji = (q: ChoiceQuestion) => q.steps.map((s) => s.answer.jp).join("");
 export const answerReading = (q: ChoiceQuestion) => q.steps.map((s) => s.answer.readings[0]).join(" ");
+export const answerKana = (q: ChoiceQuestion) => q.steps.map((s) => s.answer.kana[0]).join(" ");
 
 export function checkChoice(q: ChoiceQuestion, picked: readonly Item[]): boolean {
   return picked.length === q.steps.length && q.steps.every((s, i) => picked[i]?.id === s.answer.id);
