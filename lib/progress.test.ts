@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  STORAGE_KEY, accuracy, emptyProgress, loadProgress, parseProgress, recordAnswer, recordRound, saveProgress, unlockStage,
+  STORAGE_KEY, accuracy, emptyProgress, loadProgress, parseProgress, recordAnswer, recordRound, saveProgress, recordGrade,
   type StorageLike,
 } from "./progress";
 
@@ -77,19 +77,24 @@ describe("updates", () => {
   });
 });
 
-describe("stages", () => {
-  it("starts at stage 1 and only ever opens further", () => {
-    const p = emptyProgress();
-    expect(p.stage).toBe(1);
-    expect(unlockStage(p, 2).stage).toBe(2);
-    expect(unlockStage({ ...p, stage: 3 }, 2).stage).toBe(3);
+describe("grades", () => {
+  it("keeps only the best per mode", () => {
+    let p = emptyProgress();
+    expect(p.grades).toEqual({});
+    p = recordGrade(p, "build", 0.5);
+    expect(p.grades.build).toBe(0.5);
+    p = recordGrade(p, "build", 0.4);
+    expect(p.grades.build).toBe(0.5);
+    p = recordGrade(p, "build", 0.9);
+    expect(p.grades.build).toBe(0.9);
+    expect(recordGrade(p, "recall", 1).grades.recall).toBe(1);
   });
 
-  it("survives a round trip and clamps nonsense", () => {
+  it("survives a round trip and drops anything odd", () => {
     const s = memoryStorage();
-    saveProgress({ ...emptyProgress(), stage: 3 }, s);
-    expect(loadProgress(s).stage).toBe(3);
-    expect(parseProgress(JSON.stringify({ v: 1, stage: 9 })).stage).toBe(1);
-    expect(parseProgress(JSON.stringify({ v: 1 })).stage).toBe(1);
+    saveProgress(recordGrade(emptyProgress(), "identify", 0.75), s);
+    expect(loadProgress(s).grades.identify).toBe(0.75);
+    expect(parseProgress(JSON.stringify({ v: 1, grades: { nope: 0.5, build: 2, recall: "x" } })).grades).toEqual({});
+    expect(parseProgress(JSON.stringify({ v: 1 })).grades).toEqual({});
   });
 });

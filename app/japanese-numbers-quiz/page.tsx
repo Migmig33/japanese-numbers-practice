@@ -35,8 +35,8 @@ const FAQ: FaqItem[] = [
     a: "The native Japanese numbers, used to count things in general when you don't know a specific counter. They only go up to ten: hitotsu, futatsu, mittsu, yottsu, itsutsu, muttsu, nanatsu, yattsu, kokonotsu, too.",
   },
   {
-    q: "How do the three stages work?",
-    a: "Stage 1 gives you a number and four kanji choices per place. Stage 2 turns it round: you see the kanji and pick the number it means. Stage 3 drops the options — you type the reading yourself. Each round is twelve numbers, and 70% opens the next stage.",
+    q: "What are the three ways to practise?",
+    a: "Build it gives you a number and four kanji choices per place. Read it turns that round: you see the kanji and pick the number it means. Say it drops the options — you type the reading yourself. All three are open from the start, and each round of twelve ends with a grade from A+ down to E.",
   },
   {
     q: "How do you say big numbers like 1,000,000 in Japanese?",
@@ -53,10 +53,10 @@ export default function NumbersQuizPage() {
       page="numbers"
       intro={
         <p>
-Three stages, each a different way round. Build a number from kanji, read kanji back as a number, then
-          type the reading from memory — all the way to 十億, a thousand million. Get 70% of a round right and the
-          next stage opens. Every round slips in a few numbers whose zeros are the whole lesson, like 10, 2,000 and
-          一万, because that is where the four-digit grouping bites.
+          Three ways to practise the same numbers, all open from the start: build a number from kanji, read kanji
+          back as a number, or type the reading from memory — up to 十億, a thousand million. Each round is twelve
+          numbers and ends with a grade. Every round slips in a few whose zeros are the whole lesson, like 10, 2,000
+          and 一万, because that is where the four-digit grouping bites.
         </p>
       }
       widget={

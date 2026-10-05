@@ -1,6 +1,6 @@
 import { useCallback, useSyncExternalStore } from "react";
 import { levelForXp } from "./scoring";
-import { clampStage, type StageId } from "./stages";
+import { isModeId, type ModeId } from "./modes";
 
 export const STORAGE_KEY = "sennin.v1";
 
@@ -15,14 +15,14 @@ export type Progress = {
   roundsPlayed: number;
   /** ISO dates (YYYY-MM-DD) with at least one finished round, sorted, unique. */
   days: string[];
-  /** Highest numbers-quiz stage opened so far. */
-  stage: StageId;
+  /** Best accuracy so far in each numbers-quiz mode, 0–1. */
+  grades: Partial<Record<ModeId, number>>;
 };
 
 export type StorageLike = Pick<Storage, "getItem" | "setItem">;
 
 export function emptyProgress(): Progress {
-  return { v: 1, items: {}, xp: 0, level: 1, bestScore: 0, roundsPlayed: 0, days: [], stage: 1 };
+  return { v: 1, items: {}, xp: 0, level: 1, bestScore: 0, roundsPlayed: 0, days: [], grades: {} };
 }
 
 const num = (x: unknown) => (typeof x === "number" && Number.isFinite(x) && x >= 0 ? x : 0);
@@ -46,13 +46,19 @@ export function parseProgress(raw: string | null): Progress {
       items[id] = { attempts: num(attempts), correct: Math.min(num(correct), num(attempts)) };
     }
   }
+  const grades: Partial<Record<ModeId, number>> = {};
+  if (d.grades && typeof d.grades === "object") {
+    for (const [k, v] of Object.entries(d.grades as Record<string, unknown>)) {
+      if (isModeId(k) && typeof v === "number" && v >= 0 && v <= 1) grades[k] = v;
+    }
+  }
   const xp = num(d.xp);
   const days = Array.isArray(d.days)
     ? [...new Set(d.days.filter((x): x is string => typeof x === "string" && /^\d{4}-\d{2}-\d{2}$/.test(x)))].sort()
     : [];
   return {
     v: 1, items, xp, level: levelForXp(xp), bestScore: num(d.bestScore),
-    roundsPlayed: num(d.roundsPlayed), days, stage: clampStage(d.stage),
+    roundsPlayed: num(d.roundsPlayed), days, grades,
   };
 }
 
@@ -96,9 +102,11 @@ export function recordRound(progress: Progress, { score, date }: { score: number
   };
 }
 
-/** Opening a stage never closes one already open. */
-export function unlockStage(progress: Progress, stage: StageId): Progress {
-  return stage > progress.stage ? { ...progress, stage } : progress;
+/** A grade is only ever replaced by a better one. */
+export function recordGrade(progress: Progress, mode: ModeId, accuracy: number): Progress {
+  const best = progress.grades[mode] ?? 0;
+  if (!(accuracy > best)) return progress;
+  return { ...progress, grades: { ...progress.grades, [mode]: accuracy } };
 }
 
 export function accuracy(stats: ItemStats | undefined): number | null {

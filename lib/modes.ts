@@ -4,23 +4,22 @@ import { matchesReading } from "./normalize";
 import { ROUND_LENGTH } from "./srs";
 
 /*
- * Three stages, each a different direction of travel:
- *   1 build   — digits in, pick the kanji for each place
- *   2 identify — kanji in, pick the number
- *   3 recall  — digits in, type the reading, no options
- * Pass a stage at PASS_RATIO and the next one opens.
+ * Three ways to practise the same numbers, all open from the start — a learner picks
+ * whichever direction they want to work in:
+ *   build    — digits in, pick the kanji for each place
+ *   identify — kanji in, pick the number
+ *   recall   — digits in, type the reading, no options
+ * A round is graded when it finishes; nothing is locked behind anything else.
  */
 
-export const STAGE_IDS = [1, 2, 3] as const;
-export type StageId = (typeof STAGE_IDS)[number];
+export const MODE_IDS = ["build", "identify", "recall"] as const;
+export type ModeId = (typeof MODE_IDS)[number];
 
-/** Share of a round that must be right to open the next stage. */
-export const PASS_RATIO = 0.7;
 /** Numbers whose zeros are the lesson, guaranteed per round. */
 export const ROUND_NUMBERS_PER_ROUND = 3;
 
-export type Stage = {
-  id: StageId;
+export type Mode = {
+  id: ModeId;
   name: string;
   /** What the learner does, in their words. */
   task: string;
@@ -29,28 +28,28 @@ export type Stage = {
   sample: string;
 };
 
-export const STAGES: Record<StageId, Stage> = {
-  1: {
-    id: 1,
+export const MODES: Record<ModeId, Mode> = {
+  build: {
+    id: "build",
     name: "Build it",
     task: "Pick the kanji for each place",
-    blurb: "A number in digits, four choices per place — each one labelled with its reading.",
+    blurb: "A number in digits, four choices per place — each one labelled with its reading. The gentlest way in.",
     max: 9_999,
     sample: "684 → 六百 八十 四",
   },
-  2: {
-    id: 2,
+  identify: {
+    id: "identify",
     name: "Read it",
     task: "Pick the number the kanji means",
     blurb: "The other way round, and up into 万. No readings to lean on this time.",
     max: 9_999_999,
     sample: "三百万 → 3,000,000",
   },
-  3: {
-    id: 3,
+  recall: {
+    id: "recall",
     name: "Say it",
     task: "Type the reading",
-    blurb: "No options at all, all the way to 十億.",
+    blurb: "No options at all, all the way to 十億. The hardest of the three.",
     max: MAX_NUMBER,
     sample: "1,000,000,000 → juuoku",
   },
@@ -60,6 +59,24 @@ export type Question =
   | ({ kind: "build" } & ChoiceQuestion)
   | { kind: "identify"; id: string; n: number; kanji: string; reading: string; options: number[] }
   | { kind: "recall"; id: string; n: number; kanji: string; reading: string };
+
+// ---- Grading -----------------------------------------------------------------------
+
+export type Grade = { letter: string; label: string };
+
+const SCALE: { min: number; letter: string; label: string }[] = [
+  { min: 0.95, letter: "A+", label: "Nearly perfect" },
+  { min: 0.9, letter: "A", label: "Excellent" },
+  { min: 0.8, letter: "B", label: "Solid" },
+  { min: 0.7, letter: "C", label: "Getting there" },
+  { min: 0.6, letter: "D", label: "Shaky" },
+  { min: 0, letter: "E", label: "Worth another go" },
+];
+
+export function gradeFor(accuracy: number): Grade {
+  const band = SCALE.find((g) => accuracy >= g.min) ?? SCALE[SCALE.length - 1]!;
+  return { letter: band.letter, label: band.label };
+}
 
 const shuffle = <T,>(xs: readonly T[], rng: () => number): T[] => {
   const a = [...xs];
@@ -100,29 +117,27 @@ export function numberOptions(n: number, rng: () => number = Math.random, count 
 }
 
 /** A round's numbers: mostly free choice, always ROUND_NUMBERS_PER_ROUND zero-heavy ones. */
-export function stageNumbers(stage: StageId, length = ROUND_LENGTH, rng: () => number = Math.random): number[] {
-  const { max } = STAGES[stage];
+export function modeNumbers(mode: ModeId, length = ROUND_LENGTH, rng: () => number = Math.random): number[] {
+  const { max } = MODES[mode];
   const zeros = shuffle(roundNumbers(max), rng).slice(0, ROUND_NUMBERS_PER_ROUND);
   const picked = new Set(zeros);
   // The rest skew small so a round stays readable, with the odd large one.
   while (picked.size < length) {
     const scale = rng();
     const ceiling = scale < 0.55 ? Math.min(max, 9_999) : scale < 0.85 ? Math.min(max, 999_999) : max;
-    const n = 1 + Math.floor(rng() * ceiling);
-    picked.add(n);
+    picked.add(1 + Math.floor(rng() * ceiling));
   }
   return shuffle([...picked], rng);
 }
 
-export function buildStageRound(
-  stage: StageId,
+export function buildModeRound(
+  mode: ModeId,
   { native = false, length = ROUND_LENGTH }: { native?: boolean; length?: number } = {},
   rng: () => number = Math.random,
 ): Question[] {
-  if (stage === 1) {
-    // Stage 1 keeps the place-by-place chooser, and the same zeros guarantee as the rest.
+  if (mode === "build") {
     const natives = native ? Math.max(1, Math.round(length / 4)) : 0;
-    const questions: Question[] = stageNumbers(1, length - natives, rng).map((n) => ({
+    const questions: Question[] = modeNumbers("build", length - natives, rng).map((n) => ({
       kind: "build" as const,
       ...numberQuestion(n, rng),
     }));
@@ -130,8 +145,8 @@ export function buildStageRound(
     questions.push(...values.map((v) => ({ kind: "build" as const, ...nativeQuestion(v, rng) })));
     return shuffle(questions, rng);
   }
-  return stageNumbers(stage, length, rng).map((n) =>
-    stage === 2
+  return modeNumbers(mode, length, rng).map((n) =>
+    mode === "identify"
       ? {
           kind: "identify" as const,
           id: `i-${n}`,
@@ -151,10 +166,5 @@ export function checkAnswer(q: Question, given: string | number | null): boolean
   return false; // "build" is checked by checkChoice, which compares the picked items
 }
 
-export const passed = (correct: number, total: number) => total > 0 && correct / total >= PASS_RATIO;
-
-/** The stage a learner has reached, clamped to what exists. */
-export const clampStage = (n: unknown): StageId =>
-  STAGE_IDS.includes(n as StageId) ? (n as StageId) : 1;
-
-export const nextStage = (s: StageId): StageId | null => (s < 3 ? ((s + 1) as StageId) : null);
+/** Keeps stored mode keys honest. */
+export const isModeId = (x: unknown): x is ModeId => MODE_IDS.includes(x as ModeId);

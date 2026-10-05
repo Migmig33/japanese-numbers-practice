@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { numberKanji, numberReading } from "./bignumbers";
 import {
-  buildStageRound, checkAnswer, clampStage, nextStage, numberOptions, PASS_RATIO, passed,
-  ROUND_NUMBERS_PER_ROUND, STAGES, stageNumbers, type Question,
-} from "./stages";
+  buildModeRound, checkAnswer, gradeFor, isModeId, MODE_IDS, MODES, modeNumbers, numberOptions,
+  ROUND_NUMBERS_PER_ROUND, type Question,
+} from "./modes";
 
 function seeded(seed: number) {
   return () => {
@@ -14,11 +14,11 @@ function seeded(seed: number) {
 
 const isRound = (n: number) => n >= 10 && n % 10 === 0;
 
-describe("stage rounds", () => {
+describe("mode rounds", () => {
   it("includes three zero-heavy numbers every time", () => {
-    for (const stage of [2, 3] as const) {
+    for (const mode of ["identify", "recall"] as const) {
       for (let s = 0; s < 40; s++) {
-        const ns = stageNumbers(stage, 12, seeded(s));
+        const ns = modeNumbers(mode, 12, seeded(s));
         expect(ns).toHaveLength(12);
         expect(new Set(ns).size).toBe(12);
         expect(ns.filter(isRound).length).toBeGreaterThanOrEqual(ROUND_NUMBERS_PER_ROUND);
@@ -27,51 +27,51 @@ describe("stage rounds", () => {
   });
 
   it("stays inside each stage's ceiling and is always speakable", () => {
-    for (const stage of [2, 3] as const) {
+    for (const mode of ["identify", "recall"] as const) {
       for (let s = 0; s < 20; s++) {
-        for (const n of stageNumbers(stage, 12, seeded(s))) {
+        for (const n of modeNumbers(mode, 12, seeded(s))) {
           expect(n).toBeGreaterThanOrEqual(1);
-          expect(n).toBeLessThanOrEqual(STAGES[stage].max);
+          expect(n).toBeLessThanOrEqual(MODES[mode].max);
           expect(() => numberReading(n)).not.toThrow();
         }
       }
     }
   });
 
-  it("reaches 万 in stage 2 and 億 in stage 3", () => {
-    expect(STAGES[2].max).toBe(9_999_999);
-    expect(STAGES[3].max).toBe(1_000_000_000);
+  it("reaches 万 in Read it and 億 in Say it", () => {
+    expect(MODES.identify.max).toBe(9_999_999);
+    expect(MODES.recall.max).toBe(1_000_000_000);
   });
 });
 
-describe("buildStageRound", () => {
-  it("stage 1 keeps the place-by-place chooser", () => {
-    const round = buildStageRound(1, {}, seeded(1));
+describe("buildModeRound", () => {
+  it("Build it keeps the place-by-place chooser", () => {
+    const round = buildModeRound("build", {}, seeded(1));
     expect(round).toHaveLength(12);
     expect(round.every((q) => q.kind === "build")).toBe(true);
   });
 
-  it("every stage's round carries its share of zero-heavy numbers", () => {
-    for (const stage of [1, 2, 3] as const) {
+  it("every mode's round carries its share of zero-heavy numbers", () => {
+    for (const mode of MODE_IDS) {
       for (let s = 0; s < 25; s++) {
-        const round = buildStageRound(stage, {}, seeded(s));
+        const round = buildModeRound(mode, {}, seeded(s));
         const numbers = round.map((q) =>
           q.kind === "build" ? Number(q.prompt.replace(/,/g, "")) : q.n,
         );
         const rounded = numbers.filter((n) => Number.isFinite(n) && n >= 10 && n % 10 === 0);
-        expect(rounded.length, `stage ${stage} seed ${s}`).toBeGreaterThanOrEqual(ROUND_NUMBERS_PER_ROUND);
+        expect(rounded.length, `${mode} seed ${s}`).toBeGreaterThanOrEqual(ROUND_NUMBERS_PER_ROUND);
       }
     }
   });
 
   it("still mixes in the native words when asked", () => {
-    const round = buildStageRound(1, { native: true }, seeded(4));
+    const round = buildModeRound("build", { native: true }, seeded(4));
     expect(round.filter((q) => q.id.startsWith("native-")).length).toBeGreaterThan(0);
     expect(round).toHaveLength(12);
   });
 
-  it("stage 2 asks for the number, with the answer among the options", () => {
-    const round = buildStageRound(2, {}, seeded(2));
+  it("Read it asks for the number, with the answer among the options", () => {
+    const round = buildModeRound("identify", {}, seeded(2));
     expect(round.every((q) => q.kind === "identify")).toBe(true);
     for (const q of round) {
       if (q.kind !== "identify") continue;
@@ -82,8 +82,8 @@ describe("buildStageRound", () => {
     }
   });
 
-  it("stage 3 asks for the reading with no options", () => {
-    const round = buildStageRound(3, {}, seeded(3));
+  it("Say it asks for the reading with no options", () => {
+    const round = buildModeRound("recall", {}, seeded(3));
     expect(round.every((q) => q.kind === "recall")).toBe(true);
     for (const q of round) {
       if (q.kind !== "recall") continue;
@@ -137,26 +137,27 @@ describe("checkAnswer", () => {
   });
 });
 
-describe("passing", () => {
-  it("opens the next stage at 70%", () => {
-    expect(PASS_RATIO).toBe(0.7);
-    expect(passed(9, 12)).toBe(true); // 75%
-    expect(passed(8, 12)).toBe(false); // 66%
-    expect(passed(7, 10)).toBe(true);
-    expect(passed(0, 0)).toBe(false);
+describe("grading", () => {
+  it("runs from A+ down to E", () => {
+    expect(gradeFor(1).letter).toBe("A+");
+    expect(gradeFor(0.95).letter).toBe("A+");
+    expect(gradeFor(0.9).letter).toBe("A");
+    expect(gradeFor(0.83).letter).toBe("B");
+    expect(gradeFor(0.7).letter).toBe("C");
+    expect(gradeFor(0.6).letter).toBe("D");
+    expect(gradeFor(0).letter).toBe("E");
   });
 
-  it("walks the stages and stops at the last", () => {
-    expect(nextStage(1)).toBe(2);
-    expect(nextStage(2)).toBe(3);
-    expect(nextStage(3)).toBeNull();
+  it("always has something to say", () => {
+    for (let a = 0; a <= 1.0001; a += 0.05) {
+      const g = gradeFor(Math.min(a, 1));
+      expect(g.letter).toBeTruthy();
+      expect(g.label).toBeTruthy();
+    }
   });
 
-  it("clamps anything stored to a real stage", () => {
-    expect(clampStage(2)).toBe(2);
-    expect(clampStage(0)).toBe(1);
-    expect(clampStage(9)).toBe(1);
-    expect(clampStage("2")).toBe(1);
-    expect(clampStage(undefined)).toBe(1);
+  it("knows which mode keys are real", () => {
+    for (const id of MODE_IDS) expect(isModeId(id)).toBe(true);
+    for (const bad of ["nope", 1, null, undefined]) expect(isModeId(bad)).toBe(false);
   });
 });

@@ -2,12 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { answerKanji, answerReading, checkChoice, choiceNotes } from "@/lib/compose";
-import { isoDate, recordAnswer, recordRound, unlockStage, updateProgress, useProgress } from "@/lib/progress";
+import { isoDate, recordAnswer, recordGrade, recordRound, updateProgress, useProgress } from "@/lib/progress";
 import { levelForXp, nextMultiplier, scoreAnswer, type AnswerScore } from "@/lib/scoring";
 import { requeueMissed, ROUND_LENGTH } from "@/lib/srs";
 import {
-  buildStageRound, checkAnswer, nextStage, PASS_RATIO, passed, STAGE_IDS, STAGES, type Question, type StageId,
-} from "@/lib/stages";
+  buildModeRound, checkAnswer, gradeFor, MODE_IDS, MODES, type ModeId, type Question,
+} from "@/lib/modes";
 import type { Item, ReviewItem } from "@/lib/types";
 import { QuizHud } from "./QuizHud";
 import { ResultBar } from "./ResultBar";
@@ -44,7 +44,7 @@ function reviewItem(q: Question, notes: string[]): ReviewItem {
 
 export function NumbersQuiz() {
   const { progress } = useProgress();
-  const [stage, setStage] = useState<StageId>(1);
+  const [mode, setMode] = useState<ModeId>("build");
   const [native, setNative] = useState(false);
   const [phase, setPhase] = useState<Phase>("picking");
   const [round, setRound] = useState<Round>(() => NEW_ROUND([]));
@@ -52,7 +52,7 @@ export function NumbersQuiz() {
   const [typed, setTyped] = useState("");
   const [last, setLast] = useState<{ score: AnswerScore; notes: string[]; given: string } | null>(null);
   const [missed, setMissed] = useState<ReviewItem[]>([]);
-  const [summary, setSummary] = useState<{ leveledUp: boolean; level: number; unlocked: StageId | null } | null>(null);
+  const [summary, setSummary] = useState<{ leveledUp: boolean; level: number } | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const [answerCount, setAnswerCount] = useState(0);
   const [missCount, setMissCount] = useState(0);
@@ -63,10 +63,6 @@ export function NumbersQuiz() {
   const optionsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Every stage is open while developing, so the later ones can be looked at without
-  // playing through. Production builds keep the 70% gate.
-  const devUnlock = process.env.NODE_ENV === "development";
-  const unlocked: StageId = devUnlock ? 3 : progress.stage;
   const question = round.queue[round.index];
   const stepIndex = picked.length;
   const step = question?.kind === "build" ? question.steps[Math.min(stepIndex, question.steps.length - 1)] : undefined;
@@ -89,10 +85,10 @@ export function NumbersQuiz() {
       optionsRef.current?.querySelector<HTMLButtonElement>("button:not(:disabled)")?.focus({ preventScroll: true }),
     );
 
-  const start = (s: StageId = stage) => {
-    setStage(s);
+  const start = (m: ModeId = mode) => {
+    setMode(m);
     requeues.current = new Map();
-    setRound(NEW_ROUND(buildStageRound(s, { native, length: ROUND_LENGTH })));
+    setRound(NEW_ROUND(buildModeRound(m, { native, length: ROUND_LENGTH })));
     setPicked([]);
     setTyped("");
     setMissed([]);
@@ -175,16 +171,12 @@ export function NumbersQuiz() {
       setPhase("question");
       return;
     }
-    const correctCount = round.results.filter(Boolean).length;
-    const won = passed(correctCount, round.results.length);
-    const opens = won ? nextStage(stage) : null;
+    const correct = round.results.filter(Boolean).length;
+    const scored = round.results.length ? correct / round.results.length : 0;
     const before = progress.level;
     const after = levelForXp(progress.xp + round.score);
-    updateProgress((p) => {
-      const withRound = recordRound(p, { score: round.score, date: isoDate() });
-      return opens ? unlockStage(withRound, opens) : withRound;
-    });
-    setSummary({ leveledUp: after > before, level: after, unlocked: opens });
+    updateProgress((p) => recordGrade(recordRound(p, { score: round.score, date: isoDate() }), mode, scored));
+    setSummary({ leveledUp: after > before, level: after });
     setAnnouncement(`Round complete. Score ${round.score}.`);
     setPhase("summary");
   };
@@ -202,55 +194,46 @@ export function NumbersQuiz() {
 
       {phase === "picking" && (
         <div className="p-5 sm:p-8">
-          <h2 className="font-display text-[26px] text-primary">Three stages</h2>
+          <h2 className="font-display text-[26px] text-primary">Pick how you want to practise</h2>
           <p className="mt-1 text-ink/80">
-            Get {Math.round(PASS_RATIO * 100)}% of a round right and the next stage opens. Each round is{" "}
-            {ROUND_LENGTH} numbers and always includes a few whose zeros are the whole lesson.
+            All three are open — take them in any order. Each round is {ROUND_LENGTH} numbers, always including a few
+            whose zeros are the whole lesson, and you get a grade at the end.
           </p>
-          {devUnlock && (
-            <p className="mt-3 rounded-button border-2 border-dashed border-accent bg-accent/10 px-4 py-2 text-[14px] font-bold text-ink">
-              Development build — every stage is open. The 70% gate still applies once built.
-            </p>
-          )}
 
-          <ol className="mt-6 grid gap-3 md:grid-cols-3">
-            {STAGE_IDS.map((id) => {
-              const s = STAGES[id];
-              const open = id <= unlocked;
+          <ul className="mt-6 grid gap-3 md:grid-cols-3">
+            {MODE_IDS.map((id) => {
+              const m = MODES[id];
+              const best = progress.grades[id];
               return (
                 <li key={id}>
                   <button
                     type="button"
-                    disabled={!open}
                     onClick={() => start(id)}
-                    aria-describedby={`stage-${id}-blurb`}
-                    className={`flex h-full w-full flex-col rounded-card border-2 p-5 text-left transition-colors ${
-                      open ? "border-hairline bg-card hover:border-primary" : "border-hairline bg-paper/60 opacity-70"
-                    }`}
+                    aria-describedby={`mode-${id}-blurb`}
+                    className="flex h-full w-full flex-col rounded-card border-2 border-hairline bg-card p-5 text-left transition-colors hover:border-primary"
                   >
-                    <span className="flex items-center gap-2">
-                      <span className="font-display text-[26px] font-black text-accent tabular-nums">{id}</span>
-                      <span className="font-display text-[19px] font-black text-ink">{s.name}</span>
-                      {!open && (
-                        <span aria-hidden="true" className="ml-auto text-[13px] font-bold text-muted">Locked</span>
+                    <span className="flex items-baseline gap-2">
+                      <span className="font-display text-[19px] font-black text-ink">{m.name}</span>
+                      {best !== undefined && (
+                        <span className="ml-auto rounded-full bg-accent px-2.5 py-0.5 font-display text-[14px] font-black text-ink">
+                          Best {gradeFor(best).letter}
+                        </span>
                       )}
                     </span>
-                    <span className="mt-2 font-bold text-primary">{s.task}</span>
-                    <span id={`stage-${id}-blurb`} className="mt-1 text-[15px] leading-normal text-muted">
-                      {open ? s.blurb : `Pass stage ${id - 1} to open this.`}
+                    <span className="mt-2 font-bold text-primary">{m.task}</span>
+                    <span id={`mode-${id}-blurb`} className="mt-1 text-[15px] leading-normal text-muted">
+                      {m.blurb}
                     </span>
-                    <span lang="ja" className="jp mt-3 text-[17px] text-ink">{s.sample}</span>
-                    <span className="mt-3 text-[14px] font-bold text-muted tabular-nums">
-                      Up to {num(s.max)}
-                    </span>
+                    <span lang="ja" className="jp mt-3 text-[17px] text-ink">{m.sample}</span>
+                    <span className="mt-3 text-[14px] font-bold text-muted tabular-nums">Up to {num(m.max)}</span>
                   </button>
                 </li>
               );
             })}
-          </ol>
+          </ul>
 
           <fieldset className="mt-6">
-            <legend className="mb-3 font-bold text-ink">Stage 1 extra</legend>
+            <legend className="mb-3 font-bold text-ink">Extra for “Build it”</legend>
             <button
               type="button"
               aria-pressed={native}
@@ -279,7 +262,7 @@ export function NumbersQuiz() {
             shake={missCount > 0 && phase === "wrong"}
           />
           <p className="mt-2 text-[14px] font-bold text-muted">
-            Stage {stage} — {STAGES[stage].task}
+            {MODES[mode].name} — {MODES[mode].task}
           </p>
 
           <div className="mt-4 flex gap-6 max-sm:flex-col">
@@ -287,7 +270,7 @@ export function NumbersQuiz() {
               <Sennin key={answerCount} state={senninState} size={120} />
             </div>
             <div className="min-w-0 flex-1">
-              {/* The prompt: digits in stages 1 and 3, kanji in stage 2. */}
+              {/* The prompt: digits for build and recall, kanji for identify. */}
               <div className="flex min-h-40 flex-col items-center justify-center rounded-card border border-hairline bg-paper px-4 py-6">
                 {question.kind === "identify" ? (
                   <span lang="ja" className="jp text-center text-[clamp(40px,11vw,72px)] leading-tight text-ink">
@@ -436,24 +419,10 @@ export function NumbersQuiz() {
           leveledUp={summary.leveledUp}
           level={summary.level}
           missed={missed}
-          playAgainLabel={`Stage ${stage} again`}
-          backLabel="All stages"
-          note={
-            <p
-              className={`rounded-card border-2 px-4 py-3 text-[17px] font-bold ${
-                passed(correctCount, round.results.length)
-                  ? "border-correct/40 bg-correct/10 text-ink"
-                  : "border-wrong/40 bg-wrong/10 text-ink"
-              }`}
-            >
-              {summary.unlocked
-                ? `Stage ${stage} passed — stage ${summary.unlocked}, ${STAGES[summary.unlocked].name}, is open.`
-                : passed(correctCount, round.results.length)
-                  ? `Stage ${stage} passed. That's the last one — keep your streak up.`
-                  : `${Math.round(accuracy * 100)}% this round. ${Math.round(PASS_RATIO * 100)}% opens stage ${stage + 1}.`}
-            </p>
-          }
-          onPlayAgain={() => start(stage)}
+          playAgainLabel={`${MODES[mode].name} again`}
+          backLabel="All three"
+          note={<GradeCard mode={mode} accuracy={accuracy} correct={correctCount} total={round.results.length} />}
+          onPlayAgain={() => start(mode)}
           onBack={() => setPhase("picking")}
         />
       )}
@@ -461,7 +430,35 @@ export function NumbersQuiz() {
   );
 }
 
-/** Stage 1: pick the kanji for each place, four at a time. */
+/** The round's grade, shown on the summary for whichever mode was played. */
+function GradeCard({ mode, accuracy, correct, total }: { mode: ModeId; accuracy: number; correct: number; total: number }) {
+  const grade = gradeFor(accuracy);
+  const good = accuracy >= 0.7;
+  return (
+    <div
+      className={`flex flex-wrap items-center justify-center gap-x-5 gap-y-2 rounded-card border-2 px-5 py-4 ${
+        good ? "border-correct/40 bg-correct/10" : "border-accent/50 bg-accent/10"
+      }`}
+    >
+      <span
+        aria-hidden="true"
+        className={`font-display text-[52px] leading-none font-black ${good ? "text-correct" : "text-ink"}`}
+      >
+        {grade.letter}
+      </span>
+      <span className="text-left">
+        <span className="block font-display text-[19px] font-black text-ink">
+          {grade.label} — {MODES[mode].name}
+        </span>
+        <span className="block text-[15px] text-muted tabular-nums">
+          {correct} of {total} right, {Math.round(accuracy * 100)}%
+        </span>
+      </span>
+    </div>
+  );
+}
+
+/** Build it: pick the kanji for each place, four at a time. */
 function BuildBody({
   question, picked, step, locked, optionsRef, onPick, onRewind,
 }: {
