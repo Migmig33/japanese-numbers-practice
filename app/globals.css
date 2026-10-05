@@ -1,16 +1,24 @@
 @import "tailwindcss";
 
+/*
+ * Dark, in a grey-blue key. The solid colours (primary, accent, correct, wrong) are
+ * light enough to carry dark text, so every filled button uses --color-on-solid.
+ */
 @theme {
-  --color-ink: #1b2130;
-  --color-paper: #f6f4ef;
-  --color-card: #ffffff;
-  --color-primary: #3e4d6c;
-  --color-primary-dark: #2c3850;
+  --color-ink: #e6ebf2;
+  --color-paper: #151b26;
+  --color-card: #1e2533;
+  --color-primary: #86a9e0;
+  --color-primary-dark: #5b7bb0;
   --color-accent: #e8b84b;
-  --color-correct: #2e9e6b;
-  --color-wrong: #d4584c;
-  --color-muted: #7c879c;
-  --color-hairline: #e2ded5;
+  --color-correct: #4fc18a;
+  --color-wrong: #e8736a;
+  --color-muted: #96a3b8;
+  --color-hairline: #2c3747;
+  /* Text on a filled button or badge. */
+  --color-on-solid: #11161f;
+  /* The tracing guide, which needs to sit above the card without shouting. */
+  --color-ghost: #41506b;
 
   --text-body: 17px;
   --text-body--line-height: 1.7;
@@ -36,8 +44,10 @@
 
 @layer base {
   html {
+    /* The background lives here so the sakura layer can sit behind the body. */
     background: var(--color-paper);
     color: var(--color-ink);
+    color-scheme: dark;
     /* Keep anchor targets and focused fields clear of the 72px sticky header. */
     scroll-padding-top: 88px;
   }
@@ -79,7 +89,7 @@
     border-radius: var(--radius-button);
     border-bottom: 4px solid var(--btn-edge);
     background: var(--btn-bg);
-    color: var(--btn-fg, var(--color-card));
+    color: var(--btn-fg, var(--color-on-solid));
     font-weight: 700;
     transition:
       transform 80ms ease,
@@ -99,16 +109,15 @@
   }
   .btn-accent {
     --btn-bg: var(--color-accent);
-    --btn-edge: color-mix(in oklab, var(--color-accent) 72%, var(--color-ink));
-    --btn-fg: var(--color-ink);
+    --btn-edge: color-mix(in oklab, var(--color-accent) 72%, var(--color-on-solid));
   }
   .btn-correct {
     --btn-bg: var(--color-correct);
-    --btn-edge: color-mix(in oklab, var(--color-correct) 70%, var(--color-ink));
+    --btn-edge: color-mix(in oklab, var(--color-correct) 70%, var(--color-on-solid));
   }
   .btn-wrong {
     --btn-bg: var(--color-wrong);
-    --btn-edge: color-mix(in oklab, var(--color-wrong) 70%, var(--color-ink));
+    --btn-edge: color-mix(in oklab, var(--color-wrong) 70%, var(--color-on-solid));
   }
   .btn-ghost {
     --btn-bg: var(--color-card);
@@ -170,5 +179,66 @@
   /* Hold the mascot on frame 0 of whatever row he is on. */
   .sennin-sprite {
     animation: none !important;
+  }
+}
+
+/* ---- Falling sakura ---------------------------------------------------------------
+ * Behind everything (the page background is on <html>, the body is transparent), and
+ * never in the way: no pointer events, no tab stops, hidden from assistive tech.
+ */
+.sakura {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.petal {
+  position: absolute;
+  top: 0;
+  display: block;
+  will-change: transform;
+  animation-name: petal-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.petal-inner {
+  display: block;
+  /* A single rounded corner pair reads as a petal at this size. */
+  border-radius: 100% 0 100% 0;
+  background: linear-gradient(135deg, #f6c6d8 0%, #e79ab8 100%);
+  will-change: transform;
+  animation-name: petal-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes petal-fall {
+  from {
+    transform: translate3d(0, -12vh, 0);
+  }
+  to {
+    transform: translate3d(0, 112vh, 0);
+  }
+}
+
+@keyframes petal-drift {
+  0% {
+    transform: translateX(-16px) rotate(0deg);
+  }
+  50% {
+    transform: translateX(16px) rotate(180deg);
+  }
+  100% {
+    transform: translateX(-16px) rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Not worth holding a still frame: take the whole thing away. */
+  .sakura {
+    display: none;
   }
 }

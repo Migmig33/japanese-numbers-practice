@@ -69,7 +69,7 @@ export function TraceCanvas({ guide }: { guide: KanjiGuide }) {
     ctx.setLineDash([]);
 
     // Ghost.
-    ctx.strokeStyle = token("hairline");
+    ctx.strokeStyle = token("ghost");
     ctx.lineWidth = 30;
     for (const s of guide.strokes) {
       ctx.beginPath();
@@ -96,7 +96,7 @@ export function TraceCanvas({ guide }: { guide: KanjiGuide }) {
       ctx.beginPath();
       ctx.arc(x * S, y * S, 12, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = token("ink");
+      ctx.fillStyle = token("on-solid");
       ctx.fillText(String(i + 1), x * S, y * S + 1);
     });
   }, [guide, strokes]);

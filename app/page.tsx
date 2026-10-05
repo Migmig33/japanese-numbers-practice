@@ -13,12 +13,12 @@ export function generateMetadata(): Metadata {
 
 const STEPS = [
   {
-    title: "Pick what to practise",
-    body: "Choose any mix of number and time sets — one to ninety thousand, the native count, hours, minutes, half past, a.m. and p.m.",
+    title: "Pick how you practise",
+    body: "Each quiz offers the same material three ways, all open from the start: pick from options, set a clock, or type the answer with nothing to lean on.",
   },
   {
-    title: "Type the reading",
-    body: "Each round is twelve questions. Type the reading in romaji; macrons and long vowels are optional, so kyū, kyuu and kyu all count.",
+    title: "Play a round of twelve",
+    body: "A speed bonus, a streak multiplier up to ×3, and a grade from A+ down to E when you finish. Typing is forgiving — kyū, kyuu and kyu all count.",
   },
   {
     title: "Learn from every miss",
