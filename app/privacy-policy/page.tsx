@@ -12,6 +12,13 @@ const UPDATED = "5 October 2026";
 
 const Mail = () => <a href={`mailto:${CONTACT_EMAIL}`} className="text-primary underline">{CONTACT_EMAIL}</a>;
 
+/** External links in a policy should say where they go and not leak the referrer. */
+const Ext = ({ href, children }: { href: string; children: React.ReactNode }) => (
+  <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary underline">
+    {children}
+  </a>
+);
+
 const SECTIONS: Section[] = [
   {
     heading: "The short version",
@@ -20,7 +27,7 @@ const SECTIONS: Section[] = [
         <li>There are no accounts, so we never ask for your name, email or password.</li>
         <li>Your quiz progress is saved in your own browser and never sent to us.</li>
         <li>We count visits as a single number. We do not build a profile of you.</li>
-        <li>Adverts on the site come from a third party, which may use cookies.</li>
+        <li>Adverts come from Google AdSense, which may use cookies — including for personalised adverts, which you can opt out of.</li>
       </ul>
     ),
   },
@@ -64,18 +71,84 @@ const SECTIONS: Section[] = [
     ),
   },
   {
-    heading: "Adverts",
+    heading: "Adverts and Google AdSense",
     body: (
       <>
         <p>
-          {SITE_NAME} is free and paid for by adverts. Adverts are supplied by a third-party advertising network, which
-          is a separate company with its own privacy policy. To show adverts, that network may set its own cookies or
-          read device information such as your approximate location, device type and the pages you view.
+          {SITE_NAME} is free and paid for by adverts. Adverts on this site are served by{" "}
+          <strong>Google AdSense</strong>, a Google service. Google is a third party with its own privacy policy, and
+          what it collects is governed by that policy rather than this one.
+        </p>
+        <ul>
+          <li>
+            Third-party vendors, <strong>including Google</strong>, use cookies to serve adverts based on your previous
+            visits to this site and other sites.
+          </li>
+          <li>
+            Google&apos;s use of advertising cookies — including the DoubleClick DART cookie — enables it and its
+            partners to serve adverts to you based on your visit to {SITE_NAME} and/or other sites on the internet.
+          </li>
+          <li>
+            Google and its partners may also read device and connection information such as your IP address,
+            approximate location, device type and browser in order to select and measure adverts.
+          </li>
+        </ul>
+        <p>
+          You can opt out of personalised advertising by visiting{" "}
+          <Ext href="https://www.google.com/settings/ads">Google Ads Settings</Ext>. You can read how Google uses
+          information from sites that use its services at{" "}
+          <Ext href="https://policies.google.com/technologies/partner-sites">
+            How Google uses information from sites or apps that use our services
+          </Ext>
+          , and more about advertising cookies at{" "}
+          <Ext href="https://policies.google.com/technologies/ads">Google&apos;s advertising technologies page</Ext>.
+          To opt out of third-party vendors&apos; use of cookies for personalised advertising more generally, see{" "}
+          <Ext href="https://optout.aboutads.info/">aboutads.info</Ext> or{" "}
+          <Ext href="https://www.youronlinechoices.com/">Your Online Choices</Ext>.
         </p>
         <p>
-          We do not pass your progress or anything you type into the quizzes to advertisers. Depending on where you
-          live, you may see a consent banner from the advertising network, and you can usually opt out of personalised
-          advertising in your device or browser settings.
+          <strong>If you are in the EEA, the UK or Switzerland</strong>, you will be asked for your consent before
+          personalised adverts or advertising cookies are used, through a consent message supplied by Google. You can
+          change or withdraw that choice at any time using the privacy or consent link the message provides, or by
+          clearing this site&apos;s cookies in your browser. Declining personalised adverts does not stop you using the
+          site — you will simply see non-personalised adverts instead.
+        </p>
+        <p>
+          <strong>If you are in California or another US state with similar law</strong>, note that {SITE_NAME} does not
+          sell personal information and holds no personal data of its own to disclose. Requests about data held by
+          Google as an advertising provider are best made to Google directly, using the links above.
+        </p>
+        <p>
+          We do not pass your progress, your answers, or anything you type into the quizzes to advertisers or to any
+          other third party. Adverts are never shown inside an active quiz question.
+        </p>
+      </>
+    ),
+  },
+  {
+    heading: "Third parties used on this site",
+    body: (
+      <>
+        <p>
+          So you can see the whole list in one place, these are the only outside services {SITE_NAME} loads, and why:
+        </p>
+        <ul>
+          <li>
+            <strong>Google AdSense</strong> — serves the adverts that pay for the site, and may set cookies as described
+            above. See <Ext href="https://policies.google.com/privacy">Google&apos;s privacy policy</Ext>.
+          </li>
+          <li>
+            <strong>Google Fonts</strong> — the two typefaces the site is set in are served from Google&apos;s font
+            service, which means your browser requests them from Google and Google therefore sees your IP address.
+          </li>
+          <li>
+            <strong>Our own visitor counter</strong> — a small server we run ourselves, described in the section above.
+            No third party is involved.
+          </li>
+        </ul>
+        <p>
+          There is no analytics on this site. There is no Google Analytics, no tag manager, no social media pixel, no
+          heatmap tool and no A/B testing service. We do not know which pages you visited or how long you stayed.
         </p>
       </>
     ),
