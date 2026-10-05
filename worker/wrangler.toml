@@ -10,4 +10,4 @@ ALLOWED_ORIGIN = "*"
 # Replace id with the one `wrangler kv namespace create VISITS` prints.
 [[kv_namespaces]]
 binding = "VISITS"
-id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+id = "7bc3092e866c4e27969663c7fc317996"

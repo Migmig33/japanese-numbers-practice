@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
 /** Set NEXT_PUBLIC_SITE_URL at build time; canonical URLs and the sitemap use it. */
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://sennin.example").replace(/\/+$/, "");
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://sennin.app").replace(/\/+$/, "");
 export const SITE_NAME = "Sennin";
 export const DEVELOPER = "kupdevs";
 /** Change this to a real inbox before launch; the legal pages point people here. */
-export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "hello@sennin.example";
+export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "kupdevs@gmail.com";
 export const LAUNCH_YEAR = 2026;
 
 export type PageKey = "home" | "numbers" | "time" | "writing" | "progress" | "privacy" | "terms";
