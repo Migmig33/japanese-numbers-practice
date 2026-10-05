@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  answerKanji, answerReading, buildNotes, buildNumbers, buildQuestions, buildTiles, checkBuild,
-  checkChoice, choiceNotes, chunksFor, kanjiFor, nativeQuestion, numberQuestion, OPTION_COUNT, readingFor,
+  answerKanji, answerReading, buildNumbers, buildQuestions, checkChoice, choiceNotes, chunksFor, kanjiFor,
+  nativeQuestion, numberQuestion, OPTION_COUNT, readingFor,
 } from "./compose";
 
 function seeded(seed: number) {
@@ -36,54 +36,6 @@ describe("chunks", () => {
   it("rejects out-of-range numbers", () => {
     expect(() => chunksFor(0)).toThrow();
     expect(() => chunksFor(10000)).toThrow();
-  });
-});
-
-describe("checkBuild", () => {
-  it("must match the kanji exactly", () => {
-    expect(checkBuild(102, ["百", "二"])).toBe(true);
-    expect(checkBuild(102, ["一", "百", "二"])).toBe(false);
-    expect(checkBuild(102, ["百", "〇", "二"])).toBe(false);
-    expect(checkBuild(102, ["二", "百"])).toBe(false);
-    expect(checkBuild(102, [])).toBe(false);
-  });
-});
-
-describe("tiles", () => {
-  it("always contain the answer and stay within a sensible size", () => {
-    for (let s = 0; s < 200; s++) {
-      const rng = seeded(s);
-      const [n] = buildNumbers(1, 9999, rng);
-      const tiles = buildTiles(n!, rng);
-      const labels = tiles.map((t) => t.label);
-      const pieces = [...kanjiFor(n!)];
-      const pool = [...labels];
-      for (const p of pieces) {
-        const i = pool.indexOf(p);
-        expect(i, `${n} missing ${p}`).toBeGreaterThanOrEqual(0);
-        pool.splice(i, 1);
-      }
-      expect(tiles.length).toBeLessThanOrEqual(Math.max(9, pieces.length + 3));
-      expect(new Set(tiles.map((t) => t.key)).size).toBe(tiles.length);
-    }
-  });
-
-  it("set the 一 and 〇 traps for 102", () => {
-    const labels = buildTiles(102, seeded(1)).map((t) => t.label);
-    expect(labels).toContain("一");
-    expect(labels).toContain("〇");
-  });
-
-  it("set the 一 trap when the tens digit is 1", () => {
-    expect(buildTiles(316, seeded(1)).map((t) => t.label)).toContain("一");
-  });
-
-  it("offer only characters, never readings", () => {
-    for (let s = 0; s < 50; s++) {
-      for (const label of buildTiles(600, seeded(s)).map((t) => t.label)) {
-        expect(label).toMatch(/^[一二三四五六七八九十百千〇]$/);
-      }
-    }
   });
 });
 
@@ -170,7 +122,7 @@ describe("multiple choice", () => {
   });
 });
 
-describe("rounds and notes", () => {
+describe("rounds", () => {
   it("draws distinct numbers in range", () => {
     const ns = buildNumbers(12, 999, seeded(3));
     expect(ns).toHaveLength(12);
@@ -179,15 +131,5 @@ describe("rounds and notes", () => {
       expect(n).toBeGreaterThanOrEqual(10);
       expect(n).toBeLessThanOrEqual(999);
     }
-  });
-
-  it("explains zeros, a stray 一 and sound changes", () => {
-    expect(buildNotes(102, ["百", "〇", "二"]).join(" ")).toContain("nothing for the zero");
-    expect(buildNotes(102, ["一", "百", "二"]).join(" ")).toContain("no 一 in front");
-    expect(buildNotes(101, ["一", "百", "一"]).join(" ")).toContain("no 一 in front");
-    expect(buildNotes(316, ["三", "百", "一", "十", "六"]).join(" ")).toContain("no 一 in front");
-    expect(buildNotes(101, ["百", "二"]).join(" ")).not.toContain("no 一 in front");
-    expect(buildNotes(600, ["六", "百"]).join(" ")).toContain("roppyaku");
-    expect(buildNotes(42, ["四"])[0]).toContain("place by place");
   });
 });

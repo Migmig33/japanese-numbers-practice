@@ -2,18 +2,12 @@ import { ITEMS_BY_ID, itemsInSet } from "./items";
 import type { Item } from "./types";
 
 /*
- * "Build the number": a number such as 3,684 is written as one dataset item per
- * non-zero place — 三千 + 六百 + 八十 + 四 — so every reading comes straight from the
- * dataset, sound changes included. Nothing is derived here beyond joining chunks.
+ * Numbers written as kanji: 3,684 is one dataset item per non-zero place —
+ * 三千 + 六百 + 八十 + 四 — so every reading comes straight from the dataset, sound
+ * changes included. Nothing is derived here beyond joining the chunks.
  */
 
 export const BUILD_MAX = 9999;
-
-export type Tile = {
-  /** Unique per tile instance. */
-  key: string;
-  label: string;
-};
 
 function item(id: string): Item {
   const i = ITEMS_BY_ID.get(id);
@@ -44,10 +38,6 @@ export const kanjiFor = (n: number) => chunksFor(n).map((c) => c.jp).join("");
 
 /** Primary reading with a space between places, for display: "sanzen roppyaku hachijuu yon". */
 export const readingFor = (n: number) => chunksFor(n).map((c) => c.readings[0]).join(" ");
-
-export function checkBuild(n: number, picked: readonly string[]): boolean {
-  return picked.length > 0 && picked.join("") === kanjiFor(n);
-}
 
 /** A round's numbers, nudged toward the sound-change hundreds and thousands. */
 export function randomNumber(max: number, rng: () => number = Math.random, min = 10): number {
@@ -84,9 +74,6 @@ function shuffle<T>(xs: readonly T[], rng: () => number): T[] {
   return a;
 }
 
-const MAX_TILES = 9;
-const KANJI_POOL = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "百", "千"];
-
 /** Other items that could sit in the same place as `c`. */
 function samePlace(c: Item): Item[] {
   if (c.set === "thousands" || c.set === "hundreds") return [...ITEMS_BY_ID.values()].filter((i) => i.set === c.set);
@@ -94,21 +81,6 @@ function samePlace(c: Item): Item[] {
     return [item("ones-10"), ...[2, 3, 4, 5, 6, 7, 8, 9].map((d) => item(`teens-tens-${d * 10}`))];
   }
   return [1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => item(`ones-${d}`));
-}
-
-/**
- * The characters to choose from: the answer's own, plus the traps that catch the two
- * classic spelling mistakes — a 一 in front of 十/百/千, and a 〇 for an empty place.
- */
-export function buildTiles(n: number, rng: () => number = Math.random): Tile[] {
-  const answer = [...kanjiFor(n)];
-  const traps: string[] = [];
-  const { th, h, t } = digitsOf(n);
-  if (th === 1 || h === 1 || t === 1) traps.push("一");
-  if (String(n).includes("0")) traps.push("〇");
-  const fill = shuffle(KANJI_POOL, rng).slice(0, Math.max(2, MAX_TILES - answer.length - traps.length));
-  const labels = [...answer, ...traps, ...fill].slice(0, Math.max(MAX_TILES, answer.length + traps.length));
-  return shuffle(labels.map((label, i) => ({ key: `k${i}-${label}`, label })), rng);
 }
 
 // ---- Multiple choice: pick the kanji for each place --------------------------------
@@ -198,20 +170,4 @@ export function buildQuestions(count: number, { max, native = false }: RoundOpti
   const values = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], rng).slice(0, nativeCount);
   questions.push(...values.map((v) => nativeQuestion(v, rng)));
   return shuffle(questions, rng);
-}
-
-/** The rule(s) to show after a miss. */
-export function buildNotes(n: number, picked: readonly string[]): string[] {
-  const notes: string[] = [];
-  const kanji = kanjiFor(n);
-  if (picked.includes("〇")) {
-    notes.push(`Leave empty places out — ${n.toLocaleString("en")} is ${kanji}, with nothing for the zero.`);
-  }
-  const strayOne = picked.some((p, i) => p === "一" && ["十", "百", "千"].includes(picked[i + 1] ?? ""));
-  if (strayOne) notes.push("10, 100 and 1,000 are just 十, 百 and 千 — no 一 in front.");
-  for (const c of chunksFor(n)) {
-    if ((c.set === "hundreds" || c.set === "thousands") && c.note) notes.push(c.note);
-  }
-  if (notes.length === 0) notes.push("Build it place by place, left to right: thousands, hundreds, tens, then ones.");
-  return notes;
 }

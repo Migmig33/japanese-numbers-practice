@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Faq, type FaqItem } from "@/components/Faq";
 import { JsonLd } from "@/components/JsonLd";
 import { KanjiTracer } from "@/components/KanjiTracer";
-import { NumberBuilder } from "@/components/NumberBuilder";
 import { ContentPage } from "@/components/PageShell";
 import { RelatedCards } from "@/components/RelatedCards";
 import { kanjiFor, readingFor } from "@/lib/compose";
@@ -37,7 +36,7 @@ const FAQ: FaqItem[] = [
   },
   {
     q: "How do you write a number like 102 in kanji?",
-    a: "Write each place that isn't zero, biggest first: hundreds, then tens, then ones. 102 is 百二 — hundred, two — with nothing for the zero, and 100 and 1,000 are just 百 and 千 with no 一 in front. The build quiz above sets traps for both mistakes.",
+    a: "Write each place that isn't zero, biggest first: hundreds, then tens, then ones. 102 is 百二 — hundred, two — with nothing for the zero, and 100 and 1,000 are just 百 and 千 with no 一 in front. Those two slips are the usual ones. The numbers quiz drills the readings; this page is for the handwriting.",
   },
 ];
 
@@ -49,16 +48,14 @@ export default function WritingPage() {
       page="writing"
       intro={
         <p>
-          See a number in digits and spell it out character by character: 102 becomes 百二, 3,684 becomes
-          三千六百八十四. Then trace each number kanji over its guide, with numbered dots for every stroke.
+Trace each number kanji over its guide. The numbered dots show where every stroke begins and in
+          what order, and the counter tells you when you have drawn the right number of strokes. The chart below
+          shows how the characters combine into whole numbers — 102 is 百二, 3,684 is 三千六百八十四.
         </p>
       }
       widget={
         <>
-          <NumberBuilder />
-          <div className="mt-8">
-            <KanjiTracer />
-          </div>
+          <KanjiTracer />
           <JsonLd data={quizJsonLd("writing", ["Japanese number kanji", "Kanji stroke order", "Japanese handwriting"])} />
         </>
       }
