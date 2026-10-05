@@ -52,10 +52,10 @@ export const PAGES: Record<PageKey, PageInfo> = {
     path: "/japanese-number-kanji-writing",
     nav: "Writing",
     name: "Japanese number kanji writing",
-    title: "Write Japanese Number Kanji — Stroke Tracing Practice",
+    title: "Write Japanese Numbers in Kanji — Build and Trace Practice",
     description:
-      "Trace the Japanese number kanji 一 to 十, 百 and 千 with numbered stroke starts and a stroke counter. Free handwriting practice in your browser.",
-    blurb: "Trace the kanji for one to ten, a hundred and a thousand.",
+      "Practise writing Japanese numbers: see a number like 102, build it as 百二 from kanji or romaji tiles, then trace 一 to 十, 百 and 千 with numbered stroke starts.",
+    blurb: "Build numbers like 102 from kanji tiles, then trace each character.",
     glyph: "九",
   },
   progress: {

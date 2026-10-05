@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { Item } from "@/lib/types";
+import type { ReviewItem } from "@/lib/types";
 import { AdSlot } from "./AdSlot";
 import { Sennin } from "./Sennin";
 
@@ -12,7 +12,7 @@ type Props = {
   xpEarned: number;
   leveledUp: boolean;
   level: number;
-  missed: Item[];
+  missed: ReviewItem[];
   onPlayAgain: () => void;
   onBack: () => void;
 };

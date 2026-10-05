@@ -11,3 +11,6 @@ export type Item = {
   value?: number;
   note?: string;         // rule shown when the user misses it
 };
+
+/** What feedback and review lists need to show an answer. */
+export type ReviewItem = Pick<Item, "id" | "jp" | "readings" | "note">;

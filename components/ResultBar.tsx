@@ -2,19 +2,24 @@
 
 import { useEffect, useRef } from "react";
 import type { AnswerScore } from "@/lib/scoring";
-import type { Item } from "@/lib/types";
+import type { ReviewItem } from "@/lib/types";
 
 type Props = {
   kind: "correct" | "wrong";
-  item: Item;
+  item: ReviewItem;
   score: AnswerScore;
   /** What the user typed; empty for a skip. */
   given: string;
   onContinue: () => void;
+  /** Replaces the plain reading in the feedback line, e.g. kanji plus romaji. */
+  answer?: React.ReactNode;
+  /** Overrides the note box; defaults to the item's note. */
+  notes?: string[];
+  givenLabel?: string;
 };
 
 /** Feedback bar that rises from the bottom of the quiz card. */
-export function ResultBar({ kind, item, score, given, onContinue }: Props) {
+export function ResultBar({ kind, item, score, given, onContinue, answer, notes, givenLabel = "you typed" }: Props) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     buttonRef.current?.focus({ preventScroll: true });
@@ -34,7 +39,7 @@ export function ResultBar({ kind, item, score, given, onContinue }: Props) {
           </p>
           {correct ? (
             <p className="mt-1 text-[19px] text-ink">
-              <span className="font-bold">{item.readings[0]}</span>
+              <span className="font-bold">{answer ?? item.readings[0]}</span>
               <span className="ml-3 font-bold text-correct tabular-nums">
                 +{score.points}
                 {score.multiplier > 1 && <> (×{score.multiplier} streak)</>}
@@ -42,8 +47,8 @@ export function ResultBar({ kind, item, score, given, onContinue }: Props) {
             </p>
           ) : (
             <p className="mt-1 text-[19px] text-ink">
-              The answer is <span className="font-bold">{item.readings.join(" or ")}</span>
-              {given.trim() && <span className="text-muted"> — you typed “{given.trim()}”</span>}
+              The answer is <span className="font-bold">{answer ?? item.readings.join(" or ")}</span>
+              {given.trim() && <span className="text-muted"> — {givenLabel} “{given.trim()}”</span>}
             </p>
           )}
         </div>
@@ -56,10 +61,10 @@ export function ResultBar({ kind, item, score, given, onContinue }: Props) {
           Continue
         </button>
       </div>
-      {!correct && item.note && (
-        <p className="mt-4 rounded-button border-2 border-wrong/40 bg-card px-4 py-3 text-[16px] leading-relaxed text-ink">
-          {item.note}
-        </p>
+      {!correct && (notes ?? (item.note ? [item.note] : [])).length > 0 && (
+        <div className="mt-4 space-y-1 rounded-button border-2 border-wrong/40 bg-card px-4 py-3 text-[16px] leading-relaxed text-ink">
+          {(notes ?? [item.note!]).map((n) => <p key={n}>{n}</p>)}
+        </div>
       )}
     </div>
   );

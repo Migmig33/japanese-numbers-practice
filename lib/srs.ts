@@ -38,7 +38,7 @@ export function buildRound(pool: readonly Item[], length = ROUND_LENGTH, rng: ()
  * keeps its length, so the last question drops off. Misses too close to the end
  * aren't re-asked.
  */
-export function requeueMissed(queue: readonly Item[], index: number): Item[] {
+export function requeueMissed<T>(queue: readonly T[], index: number): T[] {
   const item = queue[index];
   const at = index + REQUEUE_GAP;
   if (!item || at >= queue.length) return [...queue];

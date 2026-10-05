@@ -8,6 +8,7 @@ import { levelForXp, nextMultiplier, scoreAnswer, type AnswerScore } from "@/lib
 import { buildRound, requeueMissed } from "@/lib/srs";
 import type { Item, SetId } from "@/lib/types";
 import { QuestionCard } from "./QuestionCard";
+import { QuizHud } from "./QuizHud";
 import { ResultBar } from "./ResultBar";
 import { Sennin, type SenninState } from "./Sennin";
 import { SetPicker } from "./SetPicker";
@@ -147,21 +148,16 @@ export function QuizWidget({ defaultSets, label }: { defaultSets: SetId[]; label
 
       {(phase === "question" || phase === "correct" || phase === "wrong") && item && (
         <div className="min-h-[520px] p-5 pb-8 sm:p-8">
-          <div className="flex items-center gap-4">
-            <SegmentedProgress round={round} phase={phase} />
-            <span className="w-16 text-right text-[15px] font-bold text-muted tabular-nums" aria-label="Time on this question">
-              {(elapsed / 1000).toFixed(1)}s
-            </span>
-            <span
-              key={missCount}
-              className={`rounded-full px-3 py-0.5 font-display text-[18px] font-black tabular-nums ${
-                multiplier > 1 ? "bg-accent text-ink" : "bg-hairline text-muted"
-              } ${missCount > 0 && phase === "wrong" ? "animate-shake" : ""}`}
-              aria-label={`Streak multiplier ×${multiplier}`}
-            >
-              ×{multiplier}
-            </span>
-          </div>
+          <QuizHud
+            total={round.queue.length}
+            index={round.index}
+            answered={phase !== "question"}
+            results={round.results.map((r) => r.correct)}
+            elapsedMs={elapsed}
+            multiplier={multiplier}
+            missCount={missCount}
+            shake={missCount > 0 && phase === "wrong"}
+          />
 
           <div className="mt-6 flex gap-6 max-sm:flex-col">
             <div className="flex shrink-0 justify-center sm:block">
@@ -200,22 +196,5 @@ export function QuizWidget({ defaultSets, label }: { defaultSets: SetId[]; label
         />
       )}
     </section>
-  );
-}
-
-function SegmentedProgress({ round, phase }: { round: Round; phase: Phase }) {
-  const answered = phase === "question" ? round.index : round.index + 1;
-  return (
-    <ol
-      className="grid flex-1 gap-1"
-      style={{ gridTemplateColumns: `repeat(${round.queue.length}, minmax(0, 1fr))` }}
-      aria-label={`Question ${round.index + 1} of ${round.queue.length}`}
-    >
-      {round.queue.map((q, i) => {
-        const r = round.results[i];
-        const color = i < answered && r ? (r.correct ? "bg-correct" : "bg-wrong") : i === round.index ? "bg-primary" : "bg-hairline";
-        return <li key={i} className={`h-2.5 rounded-full ${color}`} aria-hidden="true" />;
-      })}
-    </ol>
   );
 }
