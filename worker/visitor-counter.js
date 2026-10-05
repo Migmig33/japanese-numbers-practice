@@ -4,8 +4,9 @@
  * Counts one visit per browser per UTC day. The browser sends only a random id it made
  * up for itself; nothing identifying is stored, and IP addresses are never written down.
  *
- *   GET  /count  -> { total, today }
- *   POST /visit  -> { total, today }   body: { "id": "<random id>" }
+ *   GET  /        -> what this is, plus the current figures
+ *   GET  /count   -> { total, today }
+ *   POST /visit   -> { total, today }   body: { "id": "<random id>" }
  *
  * KV layout:
  *   total           running total of daily-unique visits
@@ -50,6 +51,22 @@ export default {
     const day = today();
 
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(request, env) });
+
+    // Visiting the bare URL in a browser should explain itself, not look broken.
+    if (pathname === "/" && request.method === "GET") {
+      const [total, todayCount] = await Promise.all([num(env.VISITS, "total"), num(env.VISITS, `day:${day}`)]);
+      return json(
+        {
+          service: "Sennin visitor counter",
+          status: "ok",
+          total,
+          today: todayCount,
+          endpoints: { count: "GET /count", visit: "POST /visit  body: { id }" },
+        },
+        request,
+        env,
+      );
+    }
 
     if (pathname === "/count" && request.method === "GET") {
       const [total, todayCount] = await Promise.all([num(env.VISITS, "total"), num(env.VISITS, `day:${day}`)]);
