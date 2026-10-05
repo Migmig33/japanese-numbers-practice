@@ -39,14 +39,14 @@ export default function Home() {
           <div>
             <h1 className="text-h1 text-primary">Learn Japanese, one round at a time</h1>
             <p className="mt-3 text-ink/90">
-Free quick-fire quizzes with instant feedback and no sign-up: read kanji numbers up to 十億, tell the
+Free quick-fire quizzes with instant feedback and no sign-up: learn hiragana, read kanji numbers up to 十億, tell the
               time, trace the characters stroke by stroke, and get the particles right. Your progress stays in this
               browser.
             </p>
           </div>
         </div>
 
-        <RelatedCards pages={["numbers", "time", "particles", "writing"]} heading="Choose a quiz" />
+        <RelatedCards pages={["hiragana", "numbers", "time", "particles"]} heading="Choose a quiz" />
 
         <section aria-labelledby="how-it-works" className="my-12">
           <h2 id="how-it-works" className="mb-4 text-[30px] text-primary">How it works</h2>

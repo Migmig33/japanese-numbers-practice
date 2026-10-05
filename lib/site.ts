@@ -8,7 +8,7 @@ export const DEVELOPER = "kupdevs";
 export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "kupdevs@gmail.com";
 export const LAUNCH_YEAR = 2026;
 
-export type PageKey = "home" | "numbers" | "time" | "writing" | "particles" | "progress" | "privacy" | "terms";
+export type PageKey = "home" | "hiragana" | "numbers" | "time" | "writing" | "particles" | "progress" | "privacy" | "terms";
 
 export type PageInfo = {
   path: string;
@@ -31,6 +31,16 @@ export const PAGES: Record<PageKey, PageInfo> = {
       "Free Japanese practice with instant feedback: read numbers up to 十億, tell the time, trace number kanji, and learn the particles は, が, を, に and で. No sign-up.",
     blurb: "",
     glyph: "仙",
+  },
+  hiragana: {
+    path: "/hiragana",
+    nav: "Hiragana",
+    name: "Hiragana",
+    title: "Hiragana Chart and Quiz — Learn All 46 Characters",
+    description:
+      "The full hiragana chart with sounds, the look-alikes that cost beginners time, and three quizzes: read it, find it, or type it from memory.",
+    blurb: "The full chart, the look-alikes, and three quizzes.",
+    glyph: "あ",
   },
   numbers: {
     path: "/japanese-numbers-quiz",
@@ -101,7 +111,7 @@ export const PAGES: Record<PageKey, PageInfo> = {
   },
 };
 
-export const NAV: PageKey[] = ["numbers", "time", "writing", "particles", "progress"];
+export const NAV: PageKey[] = ["hiragana", "numbers", "time", "particles", "writing", "progress"];
 
 export function pageMetadata(key: PageKey, extra: Partial<Metadata> = {}): Metadata {
   const p = PAGES[key];

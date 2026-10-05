@@ -5,6 +5,7 @@ export const dynamic = "force-static";
 
 const INDEXED: { key: PageKey; priority: number }[] = [
   { key: "home", priority: 1 },
+  { key: "hiragana", priority: 0.9 },
   { key: "numbers", priority: 0.9 },
   { key: "time", priority: 0.9 },
   { key: "writing", priority: 0.8 },

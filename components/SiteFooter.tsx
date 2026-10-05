@@ -5,6 +5,7 @@ const COLUMNS: { heading: string; links: { label: string; href: string }[] }[] =
   {
     heading: "Quizzes",
     links: [
+      { label: PAGES.hiragana.name, href: PAGES.hiragana.path },
       { label: "Japanese numbers quiz", href: PAGES.numbers.path },
       { label: "Telling time in Japanese", href: PAGES.time.path },
       { label: "Number kanji writing", href: PAGES.writing.path },
@@ -14,6 +15,7 @@ const COLUMNS: { heading: string; links: { label: string; href: string }[] }[] =
   {
     heading: "Reference",
     links: [
+      { label: "Hiragana chart", href: `${PAGES.hiragana.path}#reference` },
       { label: "Numbers chart", href: `${PAGES.numbers.path}#reference` },
       { label: "Hours and minutes chart", href: `${PAGES.time.path}#reference` },
       { label: "Kanji stroke counts", href: `${PAGES.writing.path}#reference` },
