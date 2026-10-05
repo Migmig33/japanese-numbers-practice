@@ -11,13 +11,14 @@ export function SiteHeader({ current }: { current?: PageKey }) {
       >
         Skip to content
       </a>
-      <div className="mx-auto flex h-full max-w-page items-center justify-between gap-3 px-4">
-        <Link href="/" className="flex items-center gap-2.5 rounded-lg" aria-label="Sennin home">
+      <div className="mx-auto flex h-full max-w-page items-center justify-between gap-2 px-4">
+        <Link href="/" className="flex shrink-0 items-center gap-2.5 rounded-lg" aria-label="Sennin home">
           <SenninHead size={32} />
           <span className="font-display text-[26px] font-black tracking-tight text-primary max-sm:hidden">Sennin</span>
         </Link>
-        <nav aria-label="Main">
-          <ul className="flex items-center gap-0.5 sm:gap-2">
+        {/* Too many links to fit a phone, so the row scrolls rather than overflowing the page. */}
+        <nav aria-label="Main" className="-mx-1 min-w-0 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <ul className="flex w-max items-center gap-0.5 sm:gap-2">
             {NAV.map((key) => {
               const active = key === current;
               return (
@@ -25,7 +26,7 @@ export function SiteHeader({ current }: { current?: PageKey }) {
                   <Link
                     href={PAGES[key].path}
                     aria-current={active ? "page" : undefined}
-                    className={`block rounded-lg px-2 py-1.5 text-[15px] font-bold sm:px-3 sm:text-base ${
+                    className={`block rounded-lg px-2 py-1.5 text-[15px] font-bold whitespace-nowrap sm:px-3 sm:text-base ${
                       active ? "bg-primary text-card" : "text-primary hover:bg-hairline"
                     }`}
                   >

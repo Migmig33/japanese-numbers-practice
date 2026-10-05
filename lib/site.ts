@@ -8,7 +8,7 @@ export const DEVELOPER = "kupdevs";
 export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "kupdevs@gmail.com";
 export const LAUNCH_YEAR = 2026;
 
-export type PageKey = "home" | "numbers" | "time" | "writing" | "progress" | "privacy" | "terms";
+export type PageKey = "home" | "numbers" | "time" | "writing" | "particles" | "progress" | "privacy" | "terms";
 
 export type PageInfo = {
   path: string;
@@ -62,6 +62,16 @@ export const PAGES: Record<PageKey, PageInfo> = {
     blurb: "Trace 一 to 十, 百 and 千 stroke by stroke.",
     glyph: "九",
   },
+  particles: {
+    path: "/japanese-particles",
+    nav: "Particles",
+    name: "Japanese particles",
+    title: "Japanese Particles — は, が, を, に, で Explained, with a Quiz",
+    description:
+      "What every beginner particle does, with short example sentences and two quizzes: fill the gap, or build the sentence piece by piece.",
+    blurb: "は, が, を, に, で — what each one does, with a quiz.",
+    glyph: "は",
+  },
   privacy: {
     path: "/privacy-policy",
     nav: "Privacy",
@@ -91,7 +101,7 @@ export const PAGES: Record<PageKey, PageInfo> = {
   },
 };
 
-export const NAV: PageKey[] = ["numbers", "time", "writing", "progress"];
+export const NAV: PageKey[] = ["numbers", "time", "writing", "particles", "progress"];
 
 export function pageMetadata(key: PageKey, extra: Partial<Metadata> = {}): Metadata {
   const p = PAGES[key];

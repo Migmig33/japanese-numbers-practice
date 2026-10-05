@@ -8,6 +8,7 @@ const COLUMNS: { heading: string; links: { label: string; href: string }[] }[] =
       { label: "Japanese numbers quiz", href: PAGES.numbers.path },
       { label: "Telling time in Japanese", href: PAGES.time.path },
       { label: "Number kanji writing", href: PAGES.writing.path },
+      { label: PAGES.particles.name, href: PAGES.particles.path },
     ],
   },
   {
