@@ -1,11 +1,11 @@
 /**
- * AdSense wiring. Everything here is read at BUILD time, and every piece is optional:
- * with no publisher id set the site renders no ad code at all, which is what we want
- * before the account is approved.
+ * AdSense wiring, read at BUILD time. The publisher id is public — it ships in the HTML
+ * of every page — so it lives in the source rather than in the deploy environment, and
+ * the env var is left as an override.
  */
 
-/** The publisher id from the AdSense dashboard, e.g. "ca-pub-1234567890123456". */
-export const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT ?? "";
+/** The publisher id from the AdSense dashboard. */
+export const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT ?? "ca-pub-3481135419181810";
 
 /**
  * One ad unit id per slot size. AdSense gives these out per unit you create, so a size

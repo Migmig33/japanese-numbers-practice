@@ -6,22 +6,32 @@ import { readFileSync, rmSync, writeFileSync } from "node:fs";
 const OUT = new URL("../public/ads.txt", import.meta.url);
 const KEY = "NEXT_PUBLIC_ADSENSE_CLIENT";
 
+function read(path) {
+  try {
+    return readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+  } catch {
+    return "";
+  }
+}
+
 /** Next reads .env.local itself, but this runs before Next does. */
 function fromEnvFile() {
   for (const file of [".env.local", ".env"]) {
-    try {
-      const line = readFileSync(new URL(`../${file}`, import.meta.url), "utf8")
-        .split("\n")
-        .find((l) => l.trim().startsWith(`${KEY}=`));
-      if (line) return line.slice(line.indexOf("=") + 1).trim().replace(/^["']|["']$/g, "");
-    } catch {
-      // No such file; try the next one.
+    const line = read(file).split("\n").find((l) => l.trim().startsWith(`${KEY}=`));
+    if (line) {
+      const value = line.slice(line.indexOf("=") + 1).trim().replace(/^["']|["']$/g, "");
+      if (value) return value;
     }
   }
   return "";
 }
 
-const client = (process.env[KEY] || fromEnvFile()).trim();
+/** The id lives in lib/ads.ts, which is TypeScript and so can't just be imported here. */
+function fromSource() {
+  return read("lib/ads.ts").match(/ca-pub-\d+/)?.[0] ?? "";
+}
+
+const client = (process.env[KEY] || fromEnvFile() || fromSource()).trim();
 
 if (!client) {
   rmSync(OUT, { force: true });
