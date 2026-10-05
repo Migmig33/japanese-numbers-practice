@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  STORAGE_KEY, accuracy, emptyProgress, loadProgress, parseProgress, recordAnswer, recordRound, saveProgress,
+  STORAGE_KEY, accuracy, emptyProgress, loadProgress, parseProgress, recordAnswer, recordRound, saveProgress, unlockStage,
   type StorageLike,
 } from "./progress";
 
@@ -74,5 +74,22 @@ describe("updates", () => {
     recordAnswer(p, "x", true);
     recordRound(p, { score: 10, date: "2026-10-05" });
     expect(p).toEqual(emptyProgress());
+  });
+});
+
+describe("stages", () => {
+  it("starts at stage 1 and only ever opens further", () => {
+    const p = emptyProgress();
+    expect(p.stage).toBe(1);
+    expect(unlockStage(p, 2).stage).toBe(2);
+    expect(unlockStage({ ...p, stage: 3 }, 2).stage).toBe(3);
+  });
+
+  it("survives a round trip and clamps nonsense", () => {
+    const s = memoryStorage();
+    saveProgress({ ...emptyProgress(), stage: 3 }, s);
+    expect(loadProgress(s).stage).toBe(3);
+    expect(parseProgress(JSON.stringify({ v: 1, stage: 9 })).stage).toBe(1);
+    expect(parseProgress(JSON.stringify({ v: 1 })).stage).toBe(1);
   });
 });

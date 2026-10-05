@@ -1,5 +1,6 @@
 import { useCallback, useSyncExternalStore } from "react";
 import { levelForXp } from "./scoring";
+import { clampStage, type StageId } from "./stages";
 
 export const STORAGE_KEY = "sennin.v1";
 
@@ -14,12 +15,14 @@ export type Progress = {
   roundsPlayed: number;
   /** ISO dates (YYYY-MM-DD) with at least one finished round, sorted, unique. */
   days: string[];
+  /** Highest numbers-quiz stage opened so far. */
+  stage: StageId;
 };
 
 export type StorageLike = Pick<Storage, "getItem" | "setItem">;
 
 export function emptyProgress(): Progress {
-  return { v: 1, items: {}, xp: 0, level: 1, bestScore: 0, roundsPlayed: 0, days: [] };
+  return { v: 1, items: {}, xp: 0, level: 1, bestScore: 0, roundsPlayed: 0, days: [], stage: 1 };
 }
 
 const num = (x: unknown) => (typeof x === "number" && Number.isFinite(x) && x >= 0 ? x : 0);
@@ -47,7 +50,10 @@ export function parseProgress(raw: string | null): Progress {
   const days = Array.isArray(d.days)
     ? [...new Set(d.days.filter((x): x is string => typeof x === "string" && /^\d{4}-\d{2}-\d{2}$/.test(x)))].sort()
     : [];
-  return { v: 1, items, xp, level: levelForXp(xp), bestScore: num(d.bestScore), roundsPlayed: num(d.roundsPlayed), days };
+  return {
+    v: 1, items, xp, level: levelForXp(xp), bestScore: num(d.bestScore),
+    roundsPlayed: num(d.roundsPlayed), days, stage: clampStage(d.stage),
+  };
 }
 
 export function loadProgress(storage: StorageLike | null): Progress {
@@ -88,6 +94,11 @@ export function recordRound(progress: Progress, { score, date }: { score: number
     roundsPlayed: progress.roundsPlayed + 1,
     days: progress.days.includes(date) ? progress.days : [...progress.days, date].sort(),
   };
+}
+
+/** Opening a stage never closes one already open. */
+export function unlockStage(progress: Progress, stage: StageId): Progress {
+  return stage > progress.stage ? { ...progress, stage } : progress;
 }
 
 export function accuracy(stats: ItemStats | undefined): number | null {

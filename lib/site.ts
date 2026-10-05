@@ -36,10 +36,10 @@ export const PAGES: Record<PageKey, PageInfo> = {
     path: "/japanese-numbers-quiz",
     nav: "Numbers",
     name: "Japanese numbers quiz",
-    title: "Japanese Numbers Quiz — Practice 1 to 90,000 Online",
+    title: "Japanese Numbers Quiz — Three Stages, 1 to a Thousand Million",
     description:
-      "Free Japanese numbers quiz: type the reading of 一 to 九万, including roppyaku, sanzen and the native hitotsu, futatsu series. Instant feedback and the rule behind every miss.",
-    blurb: "Read kanji numbers from one to ninety thousand, with every sound change explained.",
+      "Free Japanese numbers quiz in three stages: build numbers from kanji, read them back, then type the reading — 一 to 十億, with roppyaku, sanzen, 万 and 億 explained as you go.",
+    blurb: "Three stages, from 一 to 十億, with every sound change explained.",
     glyph: "六百",
   },
   time: {

@@ -13,6 +13,10 @@ type Props = {
   leveledUp: boolean;
   level: number;
   missed: ReviewItem[];
+  /** Shown under the heading: whether the stage was passed, what opened. */
+  note?: React.ReactNode;
+  playAgainLabel?: string;
+  backLabel?: string;
   onPlayAgain: () => void;
   onBack: () => void;
 };
@@ -40,6 +44,7 @@ export function SummaryCard(p: Props) {
         <p className="mt-1 text-muted">
           {p.leveledUp ? `You reached level ${p.level}.` : `Round complete — you're level ${p.level}.`}
         </p>
+        {p.note && <div className="mt-4 w-full">{p.note}</div>}
       </div>
 
       <dl className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -71,8 +76,12 @@ export function SummaryCard(p: Props) {
       )}
 
       <div className="mt-8 flex flex-wrap justify-center gap-3">
-        <button type="button" className="btn btn-accent min-w-40" onClick={p.onPlayAgain}>Play again</button>
-        <button type="button" className="btn btn-ghost min-w-40" onClick={p.onBack}>Back to sets</button>
+        <button type="button" className="btn btn-accent min-w-40" onClick={p.onPlayAgain}>
+          {p.playAgainLabel ?? "Play again"}
+        </button>
+        <button type="button" className="btn btn-ghost min-w-40" onClick={p.onBack}>
+          {p.backLabel ?? "Back to sets"}
+        </button>
       </div>
     </div>
   );

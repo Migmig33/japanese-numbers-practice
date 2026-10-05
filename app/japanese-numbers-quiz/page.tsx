@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Faq, type FaqItem } from "@/components/Faq";
 import { JsonLd } from "@/components/JsonLd";
 import { ContentPage } from "@/components/PageShell";
-import { NumberChooser } from "@/components/NumberChooser";
+import { NumbersQuiz } from "@/components/NumbersQuiz";
 import { ReferenceTable } from "@/components/ReferenceTable";
 import { RelatedCards } from "@/components/RelatedCards";
 import { ITEMS_BY_ID, itemsInSet } from "@/lib/items";
@@ -35,8 +35,12 @@ const FAQ: FaqItem[] = [
     a: "The native Japanese numbers, used to count things in general when you don't know a specific counter. They only go up to ten: hitotsu, futatsu, mittsu, yottsu, itsutsu, muttsu, nanatsu, yattsu, kokonotsu, too.",
   },
   {
-    q: "Do I have to type anything?",
-    a: "No. Every answer is a choice: you see the number in digits and pick the kanji for each place from four options, each showing its reading. For a number like 684 you choose three times — hundreds, tens, then ones.",
+    q: "How do the three stages work?",
+    a: "Stage 1 gives you a number and four kanji choices per place. Stage 2 turns it round: you see the kanji and pick the number it means. Stage 3 drops the options — you type the reading yourself. Each round is twelve numbers, and 70% opens the next stage.",
+  },
+  {
+    q: "How do you say big numbers like 1,000,000 in Japanese?",
+    a: "Japanese groups digits in fours, not threes. 万 is 10,000 and 億 is 100,000,000, so 1,000,000 is 百万 hyakuman — literally a hundred ten-thousands — and 1,000,000,000 is 十億 juuoku. That regrouping, not the readings, is what makes large numbers hard.",
   },
 ];
 
@@ -49,15 +53,15 @@ export default function NumbersQuizPage() {
       page="numbers"
       intro={
         <p>
-          See a number in digits and pick the kanji that spells it, one place at a time — four choices at each step,
-          every one labelled with its reading. 100 is 百 hyaku; 684 is 六百 roppyaku, 八十 hachijuu, 四 yon. Twelve
-          numbers a round, with a speed bonus and a streak multiplier that climbs to ×3. Miss one and you&apos;ll see
-          the rule behind it, then it comes back two questions later.
+Three stages, each a different way round. Build a number from kanji, read kanji back as a number, then
+          type the reading from memory — all the way to 十億, a thousand million. Get 70% of a round right and the
+          next stage opens. Every round slips in a few numbers whose zeros are the whole lesson, like 10, 2,000 and
+          一万, because that is where the four-digit grouping bites.
         </p>
       }
       widget={
         <>
-          <NumberChooser />
+          <NumbersQuiz />
           <JsonLd data={quizJsonLd("numbers", ["Japanese numbers", "Japanese numerals", "Kanji numbers"])} />
         </>
       }
