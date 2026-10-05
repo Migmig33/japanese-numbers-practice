@@ -63,7 +63,10 @@ export function NumbersQuiz() {
   const optionsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const unlocked = progress.stage;
+  // Every stage is open while developing, so the later ones can be looked at without
+  // playing through. Production builds keep the 70% gate.
+  const devUnlock = process.env.NODE_ENV === "development";
+  const unlocked: StageId = devUnlock ? 3 : progress.stage;
   const question = round.queue[round.index];
   const stepIndex = picked.length;
   const step = question?.kind === "build" ? question.steps[Math.min(stepIndex, question.steps.length - 1)] : undefined;
@@ -204,6 +207,11 @@ export function NumbersQuiz() {
             Get {Math.round(PASS_RATIO * 100)}% of a round right and the next stage opens. Each round is{" "}
             {ROUND_LENGTH} numbers and always includes a few whose zeros are the whole lesson.
           </p>
+          {devUnlock && (
+            <p className="mt-3 rounded-button border-2 border-dashed border-accent bg-accent/10 px-4 py-2 text-[14px] font-bold text-ink">
+              Development build — every stage is open. The 70% gate still applies once built.
+            </p>
+          )}
 
           <ol className="mt-6 grid gap-3 md:grid-cols-3">
             {STAGE_IDS.map((id) => {
