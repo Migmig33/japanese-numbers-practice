@@ -5,7 +5,7 @@ export function RelatedCards({ pages, heading = "Keep practising" }: { pages: Pa
   return (
     <section aria-labelledby="related-heading" className="my-12">
       <h2 id="related-heading" className="mb-4 text-[30px] text-primary">{heading}</h2>
-      <ul className="grid gap-4 sm:grid-cols-3">
+      <ul className={`grid gap-4 ${pages.length >= 4 ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-3"}`}>
         {pages.map((key) => {
           const p = PAGES[key];
           return (

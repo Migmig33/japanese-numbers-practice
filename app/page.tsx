@@ -14,7 +14,7 @@ export function generateMetadata(): Metadata {
 const STEPS = [
   {
     title: "Pick how you practise",
-    body: "Each quiz offers the same material three ways, all open from the start: pick from options, set a clock, or type the answer with nothing to lean on.",
+    body: "Every quiz offers the same material more than one way, all open from the start: pick from options, set a clock, build a sentence, or type the answer with nothing to lean on.",
   },
   {
     title: "Play a round of twelve",
@@ -22,7 +22,7 @@ const STEPS = [
   },
   {
     title: "Learn from every miss",
-    body: "Miss one and you get the rule behind it — why 600 is roppyaku, why 4 o’clock is yoji — and the item comes back two questions later.",
+    body: "Miss one and you get the rule behind it — why 600 is roppyaku, why 4 o’clock is yoji, why すき takes が — and the item comes back two questions later.",
   },
 ];
 
@@ -37,15 +37,16 @@ export default function Home() {
         <div className="mt-10 flex items-center gap-6 max-sm:flex-col max-sm:items-start">
           <Sennin state="idle" size={120} />
           <div>
-            <h1 className="text-h1 text-primary">Learn Japanese numbers and tell the time</h1>
+            <h1 className="text-h1 text-primary">Learn Japanese, one round at a time</h1>
             <p className="mt-3 text-ink/90">
-              Free quick-fire quizzes for reading Japanese numbers, telling time and writing number kanji.
-              No account, no download — your progress stays in this browser.
+Free quick-fire quizzes with instant feedback and no sign-up: read kanji numbers up to 十億, tell the
+              time, trace the characters stroke by stroke, and get the particles right. Your progress stays in this
+              browser.
             </p>
           </div>
         </div>
 
-        <RelatedCards pages={["numbers", "time", "writing"]} heading="Choose a quiz" />
+        <RelatedCards pages={["numbers", "time", "particles", "writing"]} heading="Choose a quiz" />
 
         <section aria-labelledby="how-it-works" className="my-12">
           <h2 id="how-it-works" className="mb-4 text-[30px] text-primary">How it works</h2>

@@ -15,7 +15,7 @@ const SECTIONS: Section[] = [
     body: (
       <>
         <p>
-          {SITE_NAME} is free to use for learning Japanese numbers and telling the time. There is nothing to sign up
+          {SITE_NAME} is free to use for learning Japanese. There is nothing to sign up
           for and nothing to pay. By using the site you accept these terms; if you do not accept them, please do not use
           the site.
         </p>
@@ -121,8 +121,7 @@ export default function TermsPage() {
       updated={UPDATED}
       intro={
         <p>
-          These are the terms for using {SITE_NAME}, a free site for practising Japanese numbers and telling the time,
-          built by {DEVELOPER}.
+          These are the terms for using {SITE_NAME}, a free site for practising Japanese, built by {DEVELOPER}.
         </p>
       }
       sections={SECTIONS}
