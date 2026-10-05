@@ -60,12 +60,12 @@ export function NumberChooser() {
   const shownAt = useRef(0);
   const requeues = useRef(new Map<string, number>());
   const optionsRef = useRef<HTMLDivElement>(null);
-  const checkRef = useRef<HTMLButtonElement>(null);
 
   const question = round.queue[round.index];
   const stepIndex = picked.length;
-  const step = question?.steps[stepIndex];
-  const complete = !!question && stepIndex === question.steps.length;
+  // While feedback shows there is no "next" step; keep the last one on screen, disabled,
+  // so the card does not jump as the answer bar rises.
+  const step = question?.steps[Math.min(stepIndex, question.steps.length - 1)];
   const locked = phase !== "question";
 
   useEffect(() => {
@@ -80,12 +80,11 @@ export function NumberChooser() {
     return () => window.clearInterval(id);
   }, [phase, round.index]);
 
-  /** After a pick, move the keyboard to whatever comes next: the choices, or Check. */
-  const focusNext = (done: boolean) =>
-    requestAnimationFrame(() => {
-      const el = done ? checkRef.current : optionsRef.current?.querySelector<HTMLButtonElement>("button:not(:disabled)");
-      el?.focus({ preventScroll: true });
-    });
+  /** After a pick that isn't the last, put the keyboard on the next set of choices. */
+  const focusOptions = () =>
+    requestAnimationFrame(() =>
+      optionsRef.current?.querySelector<HTMLButtonElement>("button:not(:disabled)")?.focus({ preventScroll: true }),
+    );
 
   const start = () => {
     const queue = buildQuestions(ROUND_LENGTH, { max: range, native });
@@ -99,11 +98,14 @@ export function NumberChooser() {
     setPhase("question");
   };
 
+  /**
+   * Marks the answer. The picks are passed in rather than read from state: the last
+   * choice submits the question itself, and that state update hasn't landed yet.
+   */
   const submit = useCallback(
-    (skip: boolean) => {
+    (chosen: readonly Item[]) => {
       if (phase !== "question" || !question) return;
-      const chosen = skip ? [] : picked;
-      const correct = !skip && checkChoice(question, chosen);
+      const correct = chosen.length > 0 && checkChoice(question, chosen);
       const ms = performance.now() - shownAt.current;
       // Per-place timing, so a four-place number isn't penalised for being longer.
       const score = scoreAnswer({ correct, ms: ms / question.steps.length, streak: round.streak });
@@ -133,7 +135,7 @@ export function NumberChooser() {
       );
       setPhase(correct ? "correct" : "wrong");
     },
-    [phase, question, picked, round.streak],
+    [phase, question, round.streak],
   );
 
   const next = () => {
@@ -234,8 +236,8 @@ export function NumberChooser() {
               </div>
 
               <p id="chooser-label" className="mt-5 mb-2 font-bold text-ink">
-                {complete
-                  ? `Check your answer, or tap a ${question.unit} to change it`
+                {locked
+                  ? "Your answer"
                   : question.steps.length === 1
                     ? `Pick the ${question.unit}`
                     : `Pick the ${question.unit} for place ${stepIndex + 1} of ${question.steps.length}`}
@@ -254,7 +256,7 @@ export function NumberChooser() {
                     disabled={locked}
                     onClick={() => {
                       setPicked((p) => p.slice(0, i));
-                      focusNext(false);
+                      focusOptions();
                     }}
                     aria-label={`Remove ${t.jp}, ${t.readings[0]}, place ${i + 1}`}
                     className="min-h-14 rounded-button border-2 border-primary bg-card px-3 py-1 text-center"
@@ -272,8 +274,12 @@ export function NumberChooser() {
                     type="button"
                     disabled={locked}
                     onClick={() => {
-                      setPicked((p) => [...p, o]);
-                      focusNext(stepIndex + 1 === question.steps.length);
+                      const next = [...picked, o];
+                      setPicked(next);
+                      // The last place marks the answer straight away — no Check button
+                      // to break the rhythm.
+                      if (next.length === question.steps.length) submit(next);
+                      else focusOptions();
                     }}
                     className="flex min-h-24 flex-col items-center justify-center rounded-button border-2 border-b-4 border-hairline bg-card px-2 py-2 hover:border-primary"
                   >
@@ -281,37 +287,23 @@ export function NumberChooser() {
                     <span className="mt-1 text-[15px] leading-tight font-bold text-muted">{o.readings.join(" / ")}</span>
                   </button>
                 ))}
-                {complete && (
-                  <p className="col-span-2 self-center text-[15px] text-muted sm:col-span-4">
-                    All {question.steps.length} place{question.steps.length > 1 ? "s" : ""} chosen.
-                  </p>
-                )}
               </div>
 
               <div className="mt-5 flex flex-wrap items-center gap-3">
-                <button
-                  ref={checkRef}
-                  type="button"
-                  className="btn btn-primary min-w-32"
-                  disabled={locked || !complete}
-                  onClick={() => submit(false)}
-                >
-                  Check
-                </button>
                 <button
                   type="button"
                   className="btn btn-ghost"
                   disabled={locked || picked.length === 0}
                   onClick={() => {
                     setPicked([]);
-                    focusNext(false);
+                    focusOptions();
                   }}
                 >
-                  Clear
+                  Start over
                 </button>
                 <button
                   type="button"
-                  onClick={() => submit(true)}
+                  onClick={() => submit([])}
                   disabled={locked}
                   className="ml-auto text-[15px] font-bold text-muted underline hover:text-primary disabled:no-underline"
                 >
