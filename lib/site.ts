@@ -3,8 +3,12 @@ import type { Metadata } from "next";
 /** Set NEXT_PUBLIC_SITE_URL at build time; canonical URLs and the sitemap use it. */
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://sennin.example").replace(/\/+$/, "");
 export const SITE_NAME = "Sennin";
+export const DEVELOPER = "kupdevs";
+/** Change this to a real inbox before launch; the legal pages point people here. */
+export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "hello@sennin.example";
+export const LAUNCH_YEAR = 2026;
 
-export type PageKey = "home" | "numbers" | "time" | "writing" | "progress";
+export type PageKey = "home" | "numbers" | "time" | "writing" | "progress" | "privacy" | "terms";
 
 export type PageInfo = {
   path: string;
@@ -57,6 +61,24 @@ export const PAGES: Record<PageKey, PageInfo> = {
       "Practise writing Japanese numbers: see a number like 102, build it as 百二 from kanji or romaji tiles, then trace 一 to 十, 百 and 千 with numbered stroke starts.",
     blurb: "Build numbers like 102 from kanji tiles, then trace each character.",
     glyph: "九",
+  },
+  privacy: {
+    path: "/privacy-policy",
+    nav: "Privacy",
+    name: "Privacy policy",
+    title: "Privacy Policy — Sennin",
+    description: "What Sennin stores, what it doesn't, and the choices you have. No accounts, no tracking profiles.",
+    blurb: "What we store, what we don't.",
+    glyph: "私",
+  },
+  terms: {
+    path: "/terms",
+    nav: "Terms",
+    name: "Terms and conditions",
+    title: "Terms and Conditions — Sennin",
+    description: "The terms for using Sennin's free Japanese numbers and telling-time quizzes.",
+    blurb: "The terms for using this site.",
+    glyph: "約",
   },
   progress: {
     path: "/progress",

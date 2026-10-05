@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PAGES } from "@/lib/site";
+import { DEVELOPER, LAUNCH_YEAR, PAGES, SITE_NAME } from "@/lib/site";
 
 const COLUMNS: { heading: string; links: { label: string; href: string }[] }[] = [
   {
@@ -30,14 +30,19 @@ const COLUMNS: { heading: string; links: { label: string; href: string }[] }[] =
     links: [
       { label: "Home", href: "/" },
       { label: "How it works", href: "/#how-it-works" },
-      { label: "Sitemap", href: "/sitemap.xml" },
+      { label: PAGES.privacy.name, href: PAGES.privacy.path },
+      { label: PAGES.terms.name, href: PAGES.terms.path },
     ],
   },
 ];
 
 export function SiteFooter() {
+  // Fixed at build time; a rebuild each year keeps it current.
+  const built = new Date().getFullYear();
+  const year = built > LAUNCH_YEAR ? `${LAUNCH_YEAR}–${built}` : String(LAUNCH_YEAR);
   return (
-    <footer className="mt-16 border-t border-hairline bg-card">
+    // The extra bottom padding keeps the fixed visitor badge clear of the footer text.
+    <footer className="mt-16 border-t border-hairline bg-card pb-24 sm:pb-14">
       <div className="mx-auto grid max-w-page grid-cols-2 gap-8 px-4 py-12 md:grid-cols-4">
         {COLUMNS.map((col) => (
           <nav key={col.heading} aria-label={col.heading}>
@@ -52,9 +57,15 @@ export function SiteFooter() {
           </nav>
         ))}
       </div>
-      <p className="mx-auto max-w-page px-4 pb-10 text-[14px] text-muted">
-        Sennin is free and ad-supported. Your progress is saved only in this browser.
-      </p>
+      <div className="border-t border-hairline">
+        <div className="mx-auto flex max-w-page flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-6 text-[14px] text-muted">
+          <p>
+            © {year} {SITE_NAME}. Built by{" "}
+            <span className="font-bold text-primary">{DEVELOPER}</span>.
+          </p>
+          <p>Free and ad-supported. Your progress is saved only in this browser.</p>
+        </div>
+      </div>
     </footer>
   );
 }

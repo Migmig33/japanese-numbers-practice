@@ -8,6 +8,8 @@ const INDEXED: { key: PageKey; priority: number }[] = [
   { key: "numbers", priority: 0.9 },
   { key: "time", priority: 0.9 },
   { key: "writing", priority: 0.8 },
+  { key: "privacy", priority: 0.3 },
+  { key: "terms", priority: 0.3 },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

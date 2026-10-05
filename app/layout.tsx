@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Zen_Kaku_Gothic_New, Zen_Maru_Gothic } from "next/font/google";
 import { AdScript } from "@/components/AdScript";
+import { VisitorCount } from "@/components/VisitorCount";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${zenMaru.variable} ${zenKaku.variable}`}>
       <body className="min-h-dvh bg-paper text-ink antialiased">
         {children}
+        <VisitorCount />
         <AdScript />
       </body>
     </html>

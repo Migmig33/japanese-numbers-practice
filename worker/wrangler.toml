@@ -1,0 +1,13 @@
+name = "sennin-visitor-counter"
+main = "visitor-counter.js"
+compatibility_date = "2025-01-01"
+
+# Lock this to the site's own origin once you know it, e.g. "https://sennin.pages.dev".
+# Leaving it as "*" lets any site read and add to your counter.
+[vars]
+ALLOWED_ORIGIN = "*"
+
+# Replace id with the one `wrangler kv namespace create VISITS` prints.
+[[kv_namespaces]]
+binding = "VISITS"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"

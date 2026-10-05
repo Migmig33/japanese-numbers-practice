@@ -37,10 +37,7 @@ export function ClockDrill() {
       <div className="mt-6 grid items-center gap-8 md:grid-cols-[1fr_320px]">
         <div>
           <p className="font-bold text-muted">Drag the hands to</p>
-          <p className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span lang="ja" className="jp text-[clamp(40px,10vw,60px)] leading-tight text-ink">{timeKanji(target)}</span>
-            <span className="font-display text-[28px] font-black text-primary tabular-nums">({digitalTime(target)})</span>
-          </p>
+          <p lang="ja" className="jp mt-1 text-[clamp(44px,11vw,64px)] leading-tight text-ink">{timeKanji(target)}</p>
           <p className="mt-1 text-[18px] font-bold text-muted">{timeReading(target)}</p>
 
           <p className="mt-4 text-[15px] text-muted">
