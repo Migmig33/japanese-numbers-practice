@@ -35,8 +35,16 @@ NEXT_PUBLIC_VISITOR_COUNTER_URL=https://sennin-visitor-counter.<you>.workers.dev
 Without that variable the badge renders nothing at all — the site never shows a
 made-up number.
 
-Once you know the site's final URL, set `ALLOWED_ORIGIN` in `wrangler.toml` to it and
-redeploy, so only your own site can add to the count.
+## Which sites may count
+
+`ALLOWED_ORIGIN` in `wrangler.toml` is a comma-separated list of origins, or `"*"` for
+any. A browser on an origin outside the list gets a 403 and is **not** counted. Add the
+site's real origin as soon as it is live, keeping `http://localhost:3000` for local work.
+
+This stops other *websites*; it is not a security boundary. A script can leave the
+Origin header off, and such requests are allowed — refusing them would only block honest
+tools, since anyone abusing the endpoint would omit the header too. What actually limits
+abuse is the per-id, per-day de-duplication.
 
 ## What it stores
 

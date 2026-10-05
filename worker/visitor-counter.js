@@ -19,11 +19,30 @@ const ID_PATTERN = /^[A-Za-z0-9_-]{8,64}$/;
 
 const today = () => new Date().toISOString().slice(0, 10);
 
+/** ALLOWED_ORIGIN is a comma-separated list, or "*" for any. */
+const allowList = (env) =>
+  (env.ALLOWED_ORIGIN || "*")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+/**
+ * Whether a browser on this origin may add to the count. A request with no Origin header
+ * (curl, a server, a crawler) can't be placed, so it is allowed: refusing it would only
+ * block honest tools, since anyone abusing the endpoint would simply omit the header too.
+ */
+function originAllowed(request, env) {
+  const list = allowList(env);
+  if (list.includes("*")) return true;
+  const origin = request.headers.get("Origin");
+  return !origin || list.includes(origin);
+}
+
 function corsHeaders(request, env) {
-  const allowed = env.ALLOWED_ORIGIN || "*";
+  const list = allowList(env);
   const origin = request.headers.get("Origin") || "";
-  // With a specific ALLOWED_ORIGIN, echo it back only when it matches.
-  const value = allowed === "*" ? "*" : allowed === origin ? origin : "";
+  // Echo a specific origin back only when it is on the list.
+  const value = list.includes("*") ? "*" : list.includes(origin) ? origin : "";
   return {
     "Access-Control-Allow-Origin": value,
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -74,6 +93,11 @@ export default {
     }
 
     if (pathname === "/visit" && request.method === "POST") {
+      // Refuse outright rather than just withholding the CORS header: without this the
+      // visit would still be counted, even though the other site could not read the reply.
+      if (!originAllowed(request, env)) {
+        return json({ error: "origin not allowed" }, request, env, 403);
+      }
       let id;
       try {
         ({ id } = await request.json());

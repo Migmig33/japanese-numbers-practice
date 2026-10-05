@@ -2,10 +2,12 @@ name = "sennin-visitor-counter"
 main = "visitor-counter.js"
 compatibility_date = "2025-01-01"
 
-# Lock this to the site's own origin once you know it, e.g. "https://sennin.pages.dev".
-# Leaving it as "*" lets any site read and add to your counter.
+# Which origins a browser may count from — a comma-separated list, or "*" for any.
+# Add the site's real origin here as soon as it is live (e.g. a sennin.pages.dev
+# preview URL) and redeploy. Note this stops other *websites* only: a script can omit
+# the Origin header, so it is a courtesy lock, not a security boundary.
 [vars]
-ALLOWED_ORIGIN = "*"
+ALLOWED_ORIGIN = "https://sennin.app,https://www.sennin.app,http://localhost:3000"
 
 # Replace id with the one `wrangler kv namespace create VISITS` prints.
 [[kv_namespaces]]
