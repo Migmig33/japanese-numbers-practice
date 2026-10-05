@@ -33,15 +33,28 @@ export function buildRound(pool: readonly Item[], length = ROUND_LENGTH, rng: ()
   return out;
 }
 
+/** How often one item may come back in a round, so a hard item can't fill it. */
+export const MAX_REQUEUES = 2;
+
+/** Tracks requeues per item for `requeueMissed`; create one per round. */
+export type RequeueLimit<T> = { counts: Map<string, number>; key: (item: T) => string };
+
 /**
  * The item at `index` was missed: put it back REQUEUE_GAP questions later. The round
  * keeps its length, so the last question drops off. Misses too close to the end
- * aren't re-asked.
+ * aren't re-asked, and with a `limit` an item stops coming back after MAX_REQUEUES —
+ * otherwise a learner stuck on one item would see nothing else.
  */
-export function requeueMissed<T>(queue: readonly T[], index: number): T[] {
+export function requeueMissed<T>(queue: readonly T[], index: number, limit?: RequeueLimit<T>): T[] {
   const item = queue[index];
   const at = index + REQUEUE_GAP;
   if (!item || at >= queue.length) return [...queue];
+  if (limit) {
+    const k = limit.key(item);
+    const seen = limit.counts.get(k) ?? 0;
+    if (seen >= MAX_REQUEUES) return [...queue];
+    limit.counts.set(k, seen + 1);
+  }
   const next = [...queue];
   next.splice(at, 0, item);
   next.length = queue.length;

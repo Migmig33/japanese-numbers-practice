@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Faq, type FaqItem } from "@/components/Faq";
 import { JsonLd } from "@/components/JsonLd";
 import { ContentPage } from "@/components/PageShell";
-import { QuizWidget } from "@/components/QuizWidget";
+import { NumberChooser } from "@/components/NumberChooser";
 import { ReferenceTable } from "@/components/ReferenceTable";
 import { RelatedCards } from "@/components/RelatedCards";
 import { ITEMS_BY_ID, itemsInSet } from "@/lib/items";
@@ -35,8 +35,8 @@ const FAQ: FaqItem[] = [
     a: "The native Japanese numbers, used to count things in general when you don't know a specific counter. They only go up to ten: hitotsu, futatsu, mittsu, yottsu, itsutsu, muttsu, nanatsu, yattsu, kokonotsu, too.",
   },
   {
-    q: "How should I type my answers?",
-    a: "In romaji. Capitals, spaces, hyphens and long-vowel marks don't matter — kyū, kyuu and kyu are all accepted, and so is either reading of 4, 7 and 9.",
+    q: "Do I have to type anything?",
+    a: "No. Every answer is a choice: you see the number in digits and pick the kanji for each place from four options, each showing its reading. For a number like 684 you choose three times — hundreds, tens, then ones.",
   },
 ];
 
@@ -49,14 +49,15 @@ export default function NumbersQuizPage() {
       page="numbers"
       intro={
         <p>
-          Type the reading of each number, from one to ninety thousand. Twelve questions a round, a speed bonus for quick
-          answers and a streak multiplier that climbs to ×3. Get one wrong and you&apos;ll see the rule behind it — then
-          it comes back two questions later.
+          See a number in digits and pick the kanji that spells it, one place at a time — four choices at each step,
+          every one labelled with its reading. 100 is 百 hyaku; 684 is 六百 roppyaku, 八十 hachijuu, 四 yon. Twelve
+          numbers a round, with a speed bonus and a streak multiplier that climbs to ×3. Miss one and you&apos;ll see
+          the rule behind it, then it comes back two questions later.
         </p>
       }
       widget={
         <>
-          <QuizWidget defaultSets={["ones", "teens-tens"]} label="Japanese numbers quiz" />
+          <NumberChooser />
           <JsonLd data={quizJsonLd("numbers", ["Japanese numbers", "Japanese numerals", "Kanji numbers"])} />
         </>
       }

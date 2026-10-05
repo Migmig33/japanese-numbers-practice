@@ -57,6 +57,7 @@ export function NumberBuilder({ defaultMode = "kanji" }: { defaultMode?: BuildMo
   const [elapsed, setElapsed] = useState(0);
 
   const shownAt = useRef(0);
+  const requeues = useRef(new Map<string, number>());
   const poolRef = useRef<HTMLDivElement>(null);
 
   const n = round.queue[round.index];
@@ -83,6 +84,7 @@ export function NumberBuilder({ defaultMode = "kanji" }: { defaultMode?: BuildMo
 
   const start = () => {
     const queue = buildNumbers(ROUND_LENGTH, range);
+    requeues.current = new Map();
     setRound(NEW_ROUND(queue));
     setMissed([]);
     setLast(null);
@@ -103,7 +105,7 @@ export function NumberBuilder({ defaultMode = "kanji" }: { defaultMode?: BuildMo
 
       setRound((r) => ({
         ...r,
-        queue: correct ? r.queue : requeueMissed(r.queue, r.index),
+        queue: correct ? r.queue : requeueMissed(r.queue, r.index, { counts: requeues.current, key: String }),
         streak: score.streak,
         longestStreak: Math.max(r.longestStreak, score.streak),
         score: r.score + score.points,

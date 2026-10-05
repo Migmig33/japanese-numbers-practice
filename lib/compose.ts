@@ -1,4 +1,4 @@
-import { ITEMS_BY_ID } from "./items";
+import { ITEMS_BY_ID, itemsInSet } from "./items";
 import { matchesReading } from "./normalize";
 import type { Item } from "./types";
 
@@ -60,9 +60,9 @@ export function checkBuild(n: number, mode: BuildMode, picked: readonly string[]
   return mode === "kanji" ? picked.join("") === kanjiFor(n) : matchesReading(picked.join(""), acceptableReadings(n));
 }
 
-/** A round's numbers: two digits or more, nudged toward the sound-change hundreds and thousands. */
-export function randomNumber(max: number, rng: () => number = Math.random): number {
-  let n = 10 + Math.floor(rng() * (max - 9));
+/** A round's numbers, nudged toward the sound-change hundreds and thousands. */
+export function randomNumber(max: number, rng: () => number = Math.random, min = 10): number {
+  let n = min + Math.floor(rng() * (max - min + 1));
   if (max >= 100 && rng() < 0.3) {
     const h = [3, 6, 8][Math.floor(rng() * 3)]!;
     n = n - (Math.floor(n / 100) % 10) * 100 + h * 100;
@@ -71,14 +71,14 @@ export function randomNumber(max: number, rng: () => number = Math.random): numb
     const th = [3, 8][Math.floor(rng() * 2)]!;
     n = n - (Math.floor(n / 1000) % 10) * 1000 + th * 1000;
   }
-  return Math.min(Math.max(n, 10), max);
+  return Math.min(Math.max(n, min), max);
 }
 
-export function buildNumbers(count: number, max: number, rng: () => number = Math.random): number[] {
+export function buildNumbers(count: number, max: number, rng: () => number = Math.random, min = 10): number[] {
   const seen = new Set<number>();
   const out: number[] = [];
   for (let guard = 0; out.length < count && guard < count * 50; guard++) {
-    const n = randomNumber(max, rng);
+    const n = randomNumber(max, rng, min);
     if (seen.has(n)) continue;
     seen.add(n);
     out.push(n);
@@ -145,6 +145,95 @@ export function buildTiles(n: number, mode: BuildMode, rng: () => number = Math.
   const room = Math.max(3, MAX_TILES - correct.length);
   const labels = [...correct, ...traps.slice(0, room)];
   return shuffle(labels.map((label, i) => ({ key: `r${i}-${label}`, label })), rng);
+}
+
+// ---- Multiple choice: pick the kanji for each place --------------------------------
+
+export const OPTION_COUNT = 4;
+
+export type Step = {
+  answer: Item;
+  /** OPTION_COUNT choices, shuffled, always including `answer`. */
+  options: Item[];
+};
+
+export type ChoiceQuestion = {
+  id: string;
+  /** The number as digits, e.g. "1,024". */
+  prompt: string;
+  /** Extra words under the prompt, for questions digits alone don't pin down. */
+  hint?: string;
+  /** What the learner is choosing — the native counting words aren't kanji. */
+  unit: "kanji" | "word";
+  steps: Step[];
+};
+
+function optionsFrom(answer: Item, pool: readonly Item[], rng: () => number): Item[] {
+  const others = shuffle(pool.filter((i) => i.id !== answer.id), rng).slice(0, OPTION_COUNT - 1);
+  return shuffle([answer, ...others], rng);
+}
+
+/** One question per number: a step for each non-zero place, biggest first. */
+export function numberQuestion(n: number, rng: () => number = Math.random): ChoiceQuestion {
+  return {
+    id: `n-${n}`,
+    prompt: n.toLocaleString("en"),
+    unit: "kanji",
+    steps: chunksFor(n).map((answer) => ({ answer, options: optionsFrom(answer, samePlace(answer), rng) })),
+  };
+}
+
+/** The native counting words are a single choice — they aren't built from places. */
+export function nativeQuestion(value: number, rng: () => number = Math.random): ChoiceQuestion {
+  const pool = itemsInSet("native");
+  const answer = pool.find((i) => i.value === value);
+  if (!answer) throw new Error(`nativeQuestion: no native word for ${value}`);
+  return {
+    id: `native-${value}`,
+    prompt: String(value),
+    hint: "counting things",
+    unit: "word",
+    steps: [{ answer, options: optionsFrom(answer, pool, rng) }],
+  };
+}
+
+export const answerKanji = (q: ChoiceQuestion) => q.steps.map((s) => s.answer.jp).join("");
+export const answerReading = (q: ChoiceQuestion) => q.steps.map((s) => s.answer.readings[0]).join(" ");
+
+export function checkChoice(q: ChoiceQuestion, picked: readonly Item[]): boolean {
+  return picked.length === q.steps.length && q.steps.every((s, i) => picked[i]?.id === s.answer.id);
+}
+
+/** What to say after a miss: the first wrong place, then the rule behind the right one. */
+export function choiceNotes(q: ChoiceQuestion, picked: readonly Item[]): string[] {
+  const notes: string[] = [];
+  const i = q.steps.findIndex((s, k) => picked[k]?.id !== s.answer.id);
+  const step = i >= 0 ? q.steps[i] : undefined;
+  if (step) {
+    const got = picked[i];
+    const place = q.steps.length > 1 ? `Place ${i + 1} of ${q.steps.length}: ` : "";
+    const sentence = got
+      ? `${q.prompt} needs ${step.answer.jp} (${step.answer.readings[0]}), not ${got.jp} (${got.readings[0]}).`
+      : `nothing chosen here — ${q.prompt} needs ${step.answer.jp} (${step.answer.readings[0]}).`;
+    notes.push(place ? place + sentence : sentence.charAt(0).toUpperCase() + sentence.slice(1));
+    if (step.answer.note) notes.push(step.answer.note);
+  }
+  for (const s of q.steps) {
+    if (s.answer.note && s.answer.note !== step?.answer.note && (s.answer.set === "hundreds" || s.answer.set === "thousands")) {
+      notes.push(s.answer.note);
+    }
+  }
+  return notes.length ? notes : ["Work left to right: thousands, hundreds, tens, then ones."];
+}
+
+export type RoundOptions = { max: number; native?: boolean };
+
+export function buildQuestions(count: number, { max, native = false }: RoundOptions, rng: () => number = Math.random): ChoiceQuestion[] {
+  const nativeCount = native ? Math.max(1, Math.round(count / 4)) : 0;
+  const questions = buildNumbers(count - nativeCount, max, rng, 1).map((n) => numberQuestion(n, rng));
+  const values = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], rng).slice(0, nativeCount);
+  questions.push(...values.map((v) => nativeQuestion(v, rng)));
+  return shuffle(questions, rng);
 }
 
 /** The rule(s) to show after a miss. */

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { itemsInSet } from "./items";
 import { emptyProgress } from "./progress";
-import { buildRound, getLeeches, requeueMissed, ROUND_LENGTH } from "./srs";
+import { buildRound, getLeeches, MAX_REQUEUES, requeueMissed, REQUEUE_GAP, ROUND_LENGTH } from "./srs";
 
 function seeded(seed: number) {
   return () => {
@@ -46,6 +46,26 @@ describe("requeueMissed", () => {
     const q = ones.slice(0, 6);
     expect(requeueMissed(q, 4)).toEqual(q);
     expect(requeueMissed(q, 5)).toEqual(q);
+  });
+
+  it("stops requeueing an item after MAX_REQUEUES", () => {
+    const limit = { counts: new Map<string, number>(), key: (i: (typeof ones)[number]) => i.id };
+    let q = ones.slice(0, 8);
+    // Miss the same item every time it comes round.
+    let at = 0;
+    for (let i = 0; i < 5; i++) {
+      q = requeueMissed(q, at, limit);
+      at += REQUEUE_GAP;
+    }
+    expect(limit.counts.get("ones-1")).toBe(MAX_REQUEUES);
+    expect(q.filter((i) => i.id === "ones-1")).toHaveLength(1 + MAX_REQUEUES);
+  });
+
+  it("counts a requeue only when one actually happens", () => {
+    const limit = { counts: new Map<string, number>(), key: (i: (typeof ones)[number]) => i.id };
+    const q = ones.slice(0, 6);
+    requeueMissed(q, 5, limit); // no room
+    expect(limit.counts.size).toBe(0);
   });
 });
 

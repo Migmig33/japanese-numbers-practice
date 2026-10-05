@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  acceptableReadings, buildNotes, buildNumbers, buildTiles, checkBuild, chunksFor, kanjiFor, readingFor,
+  acceptableReadings, answerKanji, answerReading, buildNotes, buildNumbers, buildQuestions, buildTiles, checkBuild,
+  checkChoice, choiceNotes, chunksFor, kanjiFor, nativeQuestion, numberQuestion, OPTION_COUNT, readingFor,
 } from "./compose";
 
 function seeded(seed: number) {
@@ -101,6 +102,89 @@ describe("tiles", () => {
       expect(buildTiles(304, "romaji", seeded(s)).map((t) => t.label)).not.toContain("shi");
       expect(buildTiles(7, "romaji", seeded(s)).map((t) => t.label)).not.toContain("shichi");
     }
+  });
+});
+
+describe("multiple choice", () => {
+  it("makes one step per non-zero place, in order", () => {
+    expect(numberQuestion(100, seeded(1)).steps.map((s) => s.answer.jp)).toEqual(["百"]);
+    expect(numberQuestion(102, seeded(1)).steps.map((s) => s.answer.jp)).toEqual(["百", "二"]);
+    expect(numberQuestion(3684, seeded(1)).steps.map((s) => s.answer.jp)).toEqual(["三千", "六百", "八十", "四"]);
+  });
+
+  it("always offers exactly four distinct options including the answer", () => {
+    for (let s = 0; s < 150; s++) {
+      const rng = seeded(s);
+      const [n] = buildNumbers(1, 9999, rng, 1);
+      const q = numberQuestion(n!, rng);
+      for (const step of q.steps) {
+        expect(step.options).toHaveLength(OPTION_COUNT);
+        expect(new Set(step.options.map((o) => o.id)).size).toBe(OPTION_COUNT);
+        expect(step.options.map((o) => o.id)).toContain(step.answer.id);
+      }
+    }
+  });
+
+  it("draws each place's options from that same place", () => {
+    const q = numberQuestion(3684, seeded(7));
+    expect(q.steps[0]!.options.every((o) => o.set === "thousands")).toBe(true);
+    expect(q.steps[1]!.options.every((o) => o.set === "hundreds")).toBe(true);
+    expect(q.steps[2]!.options.every((o) => o.set === "teens-tens" || o.id === "ones-10")).toBe(true);
+    expect(q.steps[3]!.options.every((o) => o.set === "ones")).toBe(true);
+  });
+
+  it("reads the assembled answer back", () => {
+    const q = numberQuestion(3684, seeded(1));
+    expect(answerKanji(q)).toBe("三千六百八十四");
+    expect(answerReading(q)).toBe("sanzen roppyaku hachijuu yon");
+  });
+
+  it("checks the picks in order", () => {
+    const q = numberQuestion(102, seeded(1));
+    const [hyaku, ni] = q.steps.map((s) => s.answer);
+    expect(checkChoice(q, [hyaku!, ni!])).toBe(true);
+    expect(checkChoice(q, [ni!, hyaku!])).toBe(false);
+    expect(checkChoice(q, [hyaku!])).toBe(false);
+    expect(checkChoice(q, [])).toBe(false);
+  });
+
+  it("names the first wrong place and the rule behind it", () => {
+    const q = numberQuestion(600, seeded(1));
+    const wrong = q.steps[0]!.options.find((o) => o.id !== "hundreds-600")!;
+    const notes = choiceNotes(q, [wrong]).join(" ");
+    expect(notes).toContain("六百");
+    expect(notes).toContain("roppyaku");
+
+    const q2 = numberQuestion(316, seeded(2));
+    const notes2 = choiceNotes(q2, [q2.steps[0]!.answer]).join(" ");
+    expect(notes2).toContain("Place 2 of 3");
+  });
+
+  it("starts a single-place note with a capital", () => {
+    const q = nativeQuestion(10, seeded(1));
+    expect(choiceNotes(q, [])[0]).toMatch(/^Nothing chosen here/);
+    expect(numberQuestion(100, seeded(1)).unit).toBe("kanji");
+  });
+
+  it("offers native counting words as a single choice", () => {
+    const q = nativeQuestion(4, seeded(1));
+    expect(q.prompt).toBe("4");
+    expect(q.hint).toBe("counting things");
+    expect(q.steps).toHaveLength(1);
+    expect(q.unit).toBe("word");
+    expect(q.steps[0]!.answer.jp).toBe("よっつ");
+    expect(q.steps[0]!.options.every((o) => o.set === "native")).toBe(true);
+  });
+
+  it("builds a round, optionally mixing in native words", () => {
+    const plain = buildQuestions(12, { max: 999 }, seeded(4));
+    expect(plain).toHaveLength(12);
+    expect(new Set(plain.map((q) => q.id)).size).toBe(12);
+    expect(plain.every((q) => q.id.startsWith("n-"))).toBe(true);
+
+    const mixed = buildQuestions(12, { max: 999, native: true }, seeded(4));
+    expect(mixed).toHaveLength(12);
+    expect(mixed.filter((q) => q.id.startsWith("native-"))).toHaveLength(3);
   });
 });
 

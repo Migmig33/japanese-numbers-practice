@@ -43,6 +43,7 @@ export function QuizWidget({ defaultSets, label }: { defaultSets: SetId[]; label
   const [elapsed, setElapsed] = useState(0);
 
   const shownAt = useRef(0);
+  const requeues = useRef(new Map<string, number>());
   const inputRef = useRef<HTMLInputElement>(null);
 
   const pool = useMemo(() => itemsInSets(selected), [selected]);
@@ -60,6 +61,7 @@ export function QuizWidget({ defaultSets, label }: { defaultSets: SetId[]; label
 
   const start = useCallback(() => {
     if (pool.length === 0) return;
+    requeues.current = new Map();
     setRound(NEW_ROUND(buildRound(pool)));
     setAnswer("");
     setLast(null);
@@ -78,7 +80,7 @@ export function QuizWidget({ defaultSets, label }: { defaultSets: SetId[]; label
       updateProgress((p) => recordAnswer(p, item.id, correct));
       setRound((r) => ({
         ...r,
-        queue: correct ? r.queue : requeueMissed(r.queue, r.index),
+        queue: correct ? r.queue : requeueMissed(r.queue, r.index, { counts: requeues.current, key: (x) => x.id }),
         streak: score.streak,
         longestStreak: Math.max(r.longestStreak, score.streak),
         score: r.score + score.points,
