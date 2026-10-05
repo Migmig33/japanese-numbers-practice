@@ -7,7 +7,7 @@ compatibility_date = "2025-01-01"
 # preview URL) and redeploy. Note this stops other *websites* only: a script can omit
 # the Origin header, so it is a courtesy lock, not a security boundary.
 [vars]
-ALLOWED_ORIGIN = "https://sennin.app,https://www.sennin.app,http://localhost:3000"
+ALLOWED_ORIGIN = "https://sennin.site,https://www.sennin.site,http://localhost:3000"
 
 # Replace id with the one `wrangler kv namespace create VISITS` prints.
 [[kv_namespaces]]

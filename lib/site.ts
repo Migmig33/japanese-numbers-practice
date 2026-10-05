@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 /** Set NEXT_PUBLIC_SITE_URL at build time; canonical URLs and the sitemap use it. */
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://sennin.app").replace(/\/+$/, "");
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://sennin.site").replace(/\/+$/, "");
 export const SITE_NAME = "Sennin";
 export const DEVELOPER = "kupdevs";
 /** Change this to a real inbox before launch; the legal pages point people here. */
