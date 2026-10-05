@@ -1,0 +1,44 @@
+{
+  "image": "sennin-sprite-sheet.png",
+  "frameWidth": 240,
+  "frameHeight": 280,
+  "columns": 8,
+  "rows": 5,
+  "animations": [
+    {
+      "name": "idle",
+      "row": 0,
+      "frames": 8,
+      "loop": true,
+      "fps": 10
+    },
+    {
+      "name": "correct",
+      "row": 1,
+      "frames": 8,
+      "loop": false,
+      "fps": 14
+    },
+    {
+      "name": "wrong",
+      "row": 2,
+      "frames": 8,
+      "loop": false,
+      "fps": 14
+    },
+    {
+      "name": "streak",
+      "row": 3,
+      "frames": 8,
+      "loop": true,
+      "fps": 10
+    },
+    {
+      "name": "levelup",
+      "row": 4,
+      "frames": 8,
+      "loop": false,
+      "fps": 12
+    }
+  ]
+}
