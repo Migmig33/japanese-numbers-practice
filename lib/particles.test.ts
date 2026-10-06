@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   answerOf, buildParticleRound, checkParticleAnswer, gappedSentence, PARTICLE_ITEMS, PARTICLE_MODE_IDS,
-  PARTICLE_MODES, PARTICLES, sentenceOf,
+  PARTICLE_MODES, PARTICLES, readingsOf, sentenceOf, spokenForm,
 } from "./particles";
 
 function seeded(seed: number) {
@@ -117,5 +117,48 @@ describe("marking", () => {
     expect(checkParticleAnswer(q, "particle-order", [...item.chunks])).toBe(true);
     expect(checkParticleAnswer(q, "particle-order", [...item.chunks].reverse())).toBe(false);
     expect(checkParticleAnswer(q, "particle-order", [])).toBe(false);
+  });
+});
+
+describe("readings under each word", () => {
+  it("lines a reading up with every chunk, for every item", () => {
+    // The per-word readings shown under the sentence are a split of `romaji`, so this
+    // alignment is what keeps them from sitting under the wrong words.
+    for (const item of PARTICLE_ITEMS) {
+      const readings = readingsOf(item);
+      expect(readings, `${item.id} has ${item.romaji.split(/\s+/).length} readings for ${item.chunks.length} chunks`).not.toBeNull();
+      expect(readings!).toHaveLength(item.chunks.length);
+    }
+  });
+
+  it("returns null rather than misaligning when an item is malformed", () => {
+    const broken = { ...PARTICLE_ITEMS[0]!, romaji: "only two" };
+    expect(readingsOf(broken)).toBeNull();
+  });
+
+  it("keeps the tested particle's own reading in the list", () => {
+    const item = PARTICLE_ITEMS.find((i) => i.id === "wa-1")!;
+    expect(readingsOf(item)![item.blank]).toBe("wa");
+  });
+});
+
+describe("what gets spoken", () => {
+  it("speaks the kana for a particle said differently from how it is written", () => {
+    const wa = PARTICLES.find((p) => p.jp === "は")!;
+    const o = PARTICLES.find((p) => p.jp === "を")!;
+    expect(spokenForm(wa)).toBe("わ");
+    expect(spokenForm(o)).toBe("お");
+  });
+
+  it("speaks every other particle exactly as written", () => {
+    for (const p of PARTICLES.filter((x) => !["は", "を"].includes(x.jp))) {
+      expect(spokenForm(p)).toBe(p.jp);
+    }
+  });
+
+  it("only overrides where the romaji really differs from the character", () => {
+    for (const p of PARTICLES) {
+      if (p.speak !== undefined) expect(p.speak).not.toBe(p.jp);
+    }
   });
 });

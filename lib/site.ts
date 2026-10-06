@@ -8,6 +8,17 @@ export const DEVELOPER = "kupdevs";
 export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "kupdevs@gmail.com";
 export const LAUNCH_YEAR = 2026;
 
+/**
+ * Google Search Console ownership token. Public — it ships in the HTML of every page.
+ *
+ * Search Console hands out the same token in two shapes: a DNS TXT value, written
+ * `google-site-verification=<token>`, and an HTML meta tag whose content is the bare
+ * token. This is the bare token — the prefix belongs only in DNS, and pasting it in here
+ * would make the tag fail verification.
+ */
+export const GOOGLE_SITE_VERIFICATION =
+  process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ?? "JjabwTVW-jou9Z7r5v-qAa0sU6pqeksQAfgaW2chjEY";
+
 export type PageKey =
   | "home" | "hiragana" | "numbers" | "time" | "writing" | "particles" | "progress"
   | "about" | "contact" | "privacy" | "terms";

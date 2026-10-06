@@ -4,7 +4,7 @@ import { AdScript } from "@/components/AdScript";
 import { SakuraFall } from "@/components/SakuraFall";
 import { VisitorCount } from "@/components/VisitorCount";
 import { ADSENSE_CLIENT } from "@/lib/ads";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { GOOGLE_SITE_VERIFICATION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const zenMaru = Zen_Maru_Gothic({
@@ -27,6 +27,8 @@ export const metadata: Metadata = {
   applicationName: SITE_NAME,
   // AdSense verifies ownership from this tag, so it has to be in the served HTML.
   ...(ADSENSE_CLIENT ? { other: { "google-adsense-account": ADSENSE_CLIENT } } : {}),
+  // Search Console does the same, from its own tag.
+  ...(GOOGLE_SITE_VERIFICATION ? { verification: { google: GOOGLE_SITE_VERIFICATION } } : {}),
 };
 
 export const viewport: Viewport = {
