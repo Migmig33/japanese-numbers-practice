@@ -65,13 +65,13 @@ export const PAGES: Record<PageKey, PageInfo> = {
     glyph: "四時",
   },
   writing: {
-    path: "/japanese-number-kanji-writing",
+    path: "/japanese-writing",
     nav: "Writing",
-    name: "Japanese number kanji writing",
-    title: "Write Japanese Number Kanji — Stroke Order and Tracing Practice",
+    name: "Japanese writing practice",
+    title: "Japanese Writing Practice — Number Kanji and Hiragana Stroke Order",
     description:
-      "Trace the Japanese number kanji 一 to 十, 百 and 千 with numbered stroke starts and a stroke counter, plus a chart of how they combine into whole numbers.",
-    blurb: "Trace 一 to 十, 百 and 千 stroke by stroke.",
+      "Trace the Japanese number kanji 一 to 万, or all 46 basic hiragana, with numbered stroke starts and a stroke counter — plus the four rules that cover almost all stroke order.",
+    blurb: "Trace the number kanji or all 46 hiragana.",
     glyph: "九",
   },
   particles: {

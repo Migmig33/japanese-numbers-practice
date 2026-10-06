@@ -101,7 +101,7 @@ He is a bust — no arms, so never write UI that assumes he points, waves or hol
 /                                     home, explains the site, links to the three quizzes
 /japanese-numbers-quiz                numbers quiz
 /telling-time-in-japanese             clock quiz
-/japanese-number-kanji-writing        stroke tracing
+/japanese-writing                     stroke tracing
 /progress                             stats and mastery heatmap
 ```
 

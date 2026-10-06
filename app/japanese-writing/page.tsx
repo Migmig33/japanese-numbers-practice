@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Faq, type FaqItem } from "@/components/Faq";
 import { JsonLd } from "@/components/JsonLd";
-import { KanjiTracer } from "@/components/KanjiTracer";
+import { WritingTracer } from "@/components/WritingTracer";
 import { ContentPage } from "@/components/PageShell";
 import { RelatedCards } from "@/components/RelatedCards";
 import { kanaFor, kanjiFor, readingFor } from "@/lib/compose";
@@ -33,6 +33,10 @@ const FAQ: FaqItem[] = [
   {
     q: "Do Japanese people write numbers in kanji or digits?",
     a: "Both. Digits are standard in horizontal text, prices and timetables. Kanji appear in vertical writing, set phrases, formal documents and on things like shop signs and menus, so you need to read both.",
+  },
+  {
+    q: "Does hiragana have a stroke order too?",
+    a: "Yes, and it follows the same habits: top to bottom, left to right, and the long sweeping stroke usually last. Hiragana came from simplified cursive kanji, so the logic carried over. Switch the tracer to ひらがな for all 46 basic characters with their stroke counts and numbered starts — き is four strokes, さ three, り two, though all three are sometimes joined into fewer in casual handwriting and in some fonts.",
   },
   {
     q: "How do you write a number like 102 in kanji?",
@@ -75,15 +79,16 @@ export default function WritingPage() {
       page="writing"
       intro={
         <p>
-Trace each number kanji over its guide. The numbered dots show where every stroke begins and in
-          what order, and the counter tells you when you have drawn the right number of strokes. The chart below
-          shows how the characters combine into whole numbers — 102 is 百二, 3,684 is 三千六百八十四.
+          Trace over the guide, in either script: the number kanji 一 to 万, or all 46 basic hiragana. The numbered
+          dots show where every stroke begins and in what order, and the counter tells you when you have drawn the
+          right number of strokes. The chart below shows how the kanji combine into whole numbers — 102 is 百二,
+          3,684 is 三千六百八十四.
         </p>
       }
       widget={
         <>
-          <KanjiTracer />
-          <JsonLd data={quizJsonLd("writing", ["Japanese number kanji", "Kanji stroke order", "Japanese handwriting"])} />
+          <WritingTracer />
+          <JsonLd data={quizJsonLd("writing", ["Japanese number kanji", "Kanji stroke order", "Hiragana stroke order", "Japanese handwriting"])} />
         </>
       }
       reference={
@@ -113,6 +118,15 @@ Trace each number kanji over its guide. The numbered dots show where every strok
               </tbody>
             </table>
           </div>
+          <h3 className="mt-10 text-[24px] text-primary">Above a thousand: 万</h3>
+          <p className="mt-2 text-ink/90">
+            Japanese counts in units of ten thousand, not thousand, so there is a character for it:{" "}
+            <span lang="ja" className="jp text-[28px] align-middle text-ink">万</span>{" "}
+            <em>man</em>. It is written with three strokes and is always preceded by a number — ten thousand is
+            一万 <em>ichiman</em>, never bare <em>man</em>, and 25,000 is 二万五千 <em>niman gosen</em>. It is in the
+            tracer and in the table below.
+          </p>
+
           <h3 className="mt-10 text-[24px] text-primary">Stroke counts</h3>
           <div className="my-6 overflow-x-auto rounded-card border border-hairline bg-card">
             <table className="w-full border-collapse text-left">
@@ -131,7 +145,7 @@ Trace each number kanji over its guide. The numbered dots show where every strok
                   <tr key={g.char} className="border-b border-hairline last:border-b-0">
                     <td className="px-5 py-2 font-bold text-ink tabular-nums">{g.value.toLocaleString("en")}</td>
                     <td lang="ja" className="jp px-5 py-1 text-jp text-ink">{g.char}</td>
-                    <td lang="ja" className="jp px-5 py-2 text-[20px] text-ink">{kanaFor(g.value)}</td>
+                    <td lang="ja" className="jp px-5 py-2 text-[20px] text-ink">{g.kana ?? kanaFor(g.value)}</td>
                     <td className="px-5 py-2 font-bold text-primary">{g.reading}</td>
                     <td className="px-5 py-2 font-bold text-ink tabular-nums">{g.strokes.length}</td>
                   </tr>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { KanjiGuide, Point } from "@/lib/strokes";
+import type { Point, TraceGuide } from "@/lib/strokes";
 
 const SIZE = 420;
 const S = SIZE / 100; // guide units → canvas px
@@ -10,20 +10,22 @@ const DOT_GAP = 9; // guide units; dots have a 12px radius
 
 /**
  * Where to draw each stroke's number. Strokes that start where an earlier one did
- * (四's first two, say) get their dot nudged a little way along their own path.
+ * (四's first two, say) get their dot nudged clear of the one already there — along the
+ * stroke's own path when we have it, and otherwise straight down.
  */
-function dotPositions(guide: KanjiGuide): Point[] {
+function dotPositions(guide: TraceGuide): Point[] {
   const placed: Point[] = [];
-  for (const s of guide.strokes) {
-    let [x, y] = s[0]!;
-    const [nx, ny] = s[1]!;
+  guide.starts.forEach(([sx, sy], i) => {
+    let [x, y] = [sx, sy];
     if (placed.some(([px, py]) => Math.hypot(px - x, py - y) < DOT_GAP)) {
-      const len = Math.hypot(nx - x, ny - y) || 1;
-      x += ((nx - x) / len) * DOT_GAP;
-      y += ((ny - y) / len) * DOT_GAP;
+      const next = guide.strokes?.[i]?.[1];
+      const [dx, dy] = next ? [next[0] - x, next[1] - y] : [0, 1];
+      const len = Math.hypot(dx, dy) || 1;
+      x += (dx / len) * DOT_GAP;
+      y += (dy / len) * DOT_GAP;
     }
     placed.push([x, y]);
-  }
+  });
   return placed;
 }
 
@@ -35,9 +37,15 @@ function token(name: string): string {
  * Tracing pad: the character as a pale ghost with numbered stroke starts. Captures
  * mouse, touch and pen strokes and counts them. Stroke order isn't checked — the
  * learner compares against the ghost.
+ *
+ * The ghost comes from the guide's polylines when it has them (the number kanji, whose
+ * straight strokes a skeleton renders well) and otherwise from the character's own glyph
+ * in the display face, which keeps curved shapes — all of hiragana — true.
  */
-export function TraceCanvas({ guide }: { guide: KanjiGuide }) {
+export function TraceCanvas({ guide }: { guide: TraceGuide }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  /** Carries the resolved display font family; canvas needs a real name, not a CSS var. */
+  const fontProbe = useRef<HTMLSpanElement>(null);
   const [strokes, setStrokes] = useState<Point[][]>([]);
   const drawing = useRef<Point[] | null>(null);
 
@@ -68,13 +76,22 @@ export function TraceCanvas({ guide }: { guide: KanjiGuide }) {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Ghost.
-    ctx.strokeStyle = token("ghost");
-    ctx.lineWidth = 30;
-    for (const s of guide.strokes) {
-      ctx.beginPath();
-      s.forEach(([x, y], i) => (i ? ctx.lineTo(x * S, y * S) : ctx.moveTo(x * S, y * S)));
-      ctx.stroke();
+    // Ghost: the guide's own paths, or the real glyph when it has none.
+    if (guide.strokes) {
+      ctx.strokeStyle = token("ghost");
+      ctx.lineWidth = 30;
+      for (const s of guide.strokes) {
+        ctx.beginPath();
+        s.forEach(([x, y], i) => (i ? ctx.lineTo(x * S, y * S) : ctx.moveTo(x * S, y * S)));
+        ctx.stroke();
+      }
+    } else {
+      const family = fontProbe.current ? getComputedStyle(fontProbe.current).fontFamily : "sans-serif";
+      ctx.fillStyle = token("ghost");
+      ctx.font = `700 ${Math.round(SIZE * 0.78)}px ${family}`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(guide.char, SIZE / 2, SIZE / 2);
     }
 
     // User strokes.
@@ -103,12 +120,22 @@ export function TraceCanvas({ guide }: { guide: KanjiGuide }) {
 
   useEffect(draw, [draw]);
 
+  // The glyph ghost needs the webfont; until it loads the canvas would show a fallback.
+  useEffect(() => {
+    if (guide.strokes || !("fonts" in document)) return;
+    let live = true;
+    document.fonts.ready.then(() => live && draw()).catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [draw, guide.strokes]);
+
   const toPoint = (e: React.PointerEvent<HTMLCanvasElement>): Point => {
     const r = e.currentTarget.getBoundingClientRect();
     return [((e.clientX - r.left) / r.width) * SIZE, ((e.clientY - r.top) / r.height) * SIZE];
   };
 
-  const expected = guide.strokes.length;
+  const expected = guide.starts.length;
   const n = strokes.length;
   const status =
     n === 0
@@ -121,6 +148,7 @@ export function TraceCanvas({ guide }: { guide: KanjiGuide }) {
 
   return (
     <div className="flex flex-col items-center">
+      <span ref={fontProbe} aria-hidden="true" className="jp pointer-events-none absolute opacity-0">漢</span>
       <canvas
         ref={canvasRef}
         role="img"
