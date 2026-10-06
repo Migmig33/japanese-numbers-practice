@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Zen_Kaku_Gothic_New, Zen_Maru_Gothic } from "next/font/google";
 import { AdScript } from "@/components/AdScript";
 import { SakuraFall } from "@/components/SakuraFall";
+import { SpeechProvider } from "@/components/SpeechProvider";
 import { VisitorCount } from "@/components/VisitorCount";
 import { ADSENSE_CLIENT } from "@/lib/ads";
 import { GOOGLE_SITE_VERIFICATION, SITE_NAME, SITE_URL } from "@/lib/site";
@@ -41,7 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       {/* No background on the body: <html> carries it so the sakura can sit behind. */}
       <body className="min-h-dvh text-ink antialiased">
         <SakuraFall />
-        {children}
+        <SpeechProvider>{children}</SpeechProvider>
         <VisitorCount />
         <AdScript />
       </body>

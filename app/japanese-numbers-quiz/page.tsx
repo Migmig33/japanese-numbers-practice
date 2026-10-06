@@ -4,6 +4,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { ContentPage } from "@/components/PageShell";
 import { NumbersQuiz } from "@/components/NumbersQuiz";
 import { ReferenceTable } from "@/components/ReferenceTable";
+import { SpeechNotice } from "@/components/SpeakButton";
 import { RelatedCards } from "@/components/RelatedCards";
 import { ITEMS_BY_ID, itemsInSet } from "@/lib/items";
 import { quizJsonLd } from "@/lib/jsonld";
@@ -68,7 +69,11 @@ export default function NumbersQuizPage() {
       reference={
         <section aria-labelledby="reference">
           <h2 id="reference" className="mt-4 text-[30px] text-primary">Japanese numbers chart</h2>
-          <p className="mt-2 text-ink/90">The building blocks, then the sound changes that trip everyone up.</p>
+          <p className="mt-2 text-ink/90">
+            The building blocks, then the sound changes that trip everyone up. Press a listen button to hear a
+            reading — the sound changes are much easier to remember once you have heard them.
+          </p>
+          <SpeechNotice className="my-6" />
           <ReferenceTable caption="1 to 10" items={itemsInSet("ones")} />
           <ReferenceTable caption="Sound changes to remember" items={sound} showNotes />
           <ReferenceTable caption="Hundreds" items={itemsInSet("hundreds")} />

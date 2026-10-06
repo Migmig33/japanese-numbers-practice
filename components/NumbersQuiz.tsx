@@ -202,6 +202,7 @@ export function NumbersQuiz() {
           <p className="mt-1 text-ink/80">
             All three are open — take them in any order. Each round is {ROUND_LENGTH} numbers, always including a few
             whose zeros are the whole lesson, and you get a grade at the end.
+            Every answer is read aloud when it appears, so you hear the reading as well as see it.
           </p>
 
           <ul className="mt-6 grid gap-3 md:grid-cols-3">
@@ -402,6 +403,9 @@ export function NumbersQuiz() {
               givenLabel={question.kind === "recall" ? "you typed" : "you chose"}
               kana={answer.kana}
               notes={last.notes}
+              /* The kana, not the kanji: 六百 handed to a synthesiser is a gamble, ろっぴゃく is not. */
+              speak={answer.kana}
+              speakLabel={`the reading, ${answer.reading}`}
               answer={
                 <>
                   <span lang="ja" className="jp mr-2 inline-block align-middle text-jp whitespace-nowrap">

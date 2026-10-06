@@ -1,3 +1,5 @@
+import { numberKana } from "./bignumbers";
+
 /**
  * Tracing guides for the number kanji, in standard stroke order. Each stroke is a
  * polyline in a 0–100 box; the first point is where the stroke starts. These are
@@ -203,6 +205,11 @@ export const KANA_GUIDES: readonly KanaGuide[] = [
 export type TraceGuide = {
   char: string;
   reading: string;
+  /**
+   * The reading in kana, for the synthesiser. A bare kanji is ambiguous out loud — 四
+   * alone may come back as shi rather than yon — so the sound is always driven from kana.
+   */
+  kana: string;
   strokes?: readonly Stroke[];
   starts: readonly Point[];
   note?: string;
@@ -211,6 +218,8 @@ export type TraceGuide = {
 export const kanjiTrace = (k: KanjiGuide): TraceGuide => ({
   char: k.char,
   reading: k.reading,
+  // The composer knows every reading below 万; only 万 itself has to carry its own.
+  kana: k.kana ?? numberKana(k.value),
   strokes: k.strokes,
   starts: k.strokes.map((s) => s[0]!),
   ...(k.note ? { note: k.note } : {}),
@@ -219,5 +228,7 @@ export const kanjiTrace = (k: KanjiGuide): TraceGuide => ({
 export const kanaTrace = (k: KanaGuide): TraceGuide => ({
   char: k.char,
   reading: k.reading,
+  // A kana character is already its own reading.
+  kana: k.char,
   starts: k.starts,
 });

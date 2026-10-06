@@ -106,3 +106,26 @@ describe("trace guides", () => {
     }
   });
 });
+
+describe("trace guide kana", () => {
+  it("reads each kanji from the dataset, so the sound is never guessed", () => {
+    const byChar = new Map(KANJI_GUIDES.map((k) => [k.char, kanjiTrace(k).kana]));
+    expect(byChar.get("一")).toBe("いち");
+    expect(byChar.get("四")).toBe("よん");
+    expect(byChar.get("七")).toBe("なな");
+    expect(byChar.get("百")).toBe("ひゃく");
+  });
+
+  it("gives 万 its own kana, since a bare 万 is never a number", () => {
+    const man = KANJI_GUIDES.find((k) => k.char === "万")!;
+    expect(kanjiTrace(man).kana).toBe("まん");
+  });
+
+  it("gives every kanji guide a non-empty kana", () => {
+    for (const k of KANJI_GUIDES) expect(kanjiTrace(k).kana.length).toBeGreaterThan(0);
+  });
+
+  it("uses the character itself for kana guides", () => {
+    for (const k of KANA_GUIDES) expect(kanaTrace(k).kana).toBe(k.char);
+  });
+});

@@ -1,18 +1,21 @@
 "use client";
 
-import { useSpeech } from "@/lib/speech";
+import { useEffect, useRef, useState } from "react";
+import { autoPlayReady, shouldWaitForVoice, VOICE_GRACE_MS } from "@/lib/speech";
+import { useSpeech } from "./SpeechProvider";
 
 /**
- * Plays a piece of Japanese aloud. Renders nothing at all when the device has no
- * Japanese voice — a button that mispronounces, or does nothing when pressed, is worse
- * than no button. `SpeechNotice` explains the absence once per page instead of leaving
- * a row of dead controls.
+ * Plays a piece of Japanese aloud, using the device's best Japanese voice when it has
+ * one and whatever the browser offers for ja-JP when it does not. It disappears only on
+ * a device with no speech synthesiser at all, where the button could do nothing
+ * whatever; `SpeechNotice` explains that, and warns about a missing Japanese voice.
  */
 export function SpeakButton({
   text,
   id,
   label,
   size = 40,
+  autoPlay = false,
 }: {
   /** The Japanese to speak — not the romaji; the voice wants the real script. */
   text: string;
@@ -21,8 +24,36 @@ export function SpeakButton({
   /** Read out by screen readers, e.g. "Play は". */
   label: string;
   size?: number;
+  /**
+   * Speak once, unprompted, as soon as the button appears. Only for audio the user has
+   * just asked for by acting — a revealed answer — and the caller must remount the
+   * button (a changing `key`) for each new one, since this fires on mount.
+   */
+  autoPlay?: boolean;
 }) {
-  const { speak, speakingId, canSpeak } = useSpeech();
+  const { speak, speakingId, canSpeak, status } = useSpeech();
+  const played = useRef(false);
+  const [waited, setWaited] = useState(false);
+
+  /*
+   * The grace period runs for any status that is not yet settled, not just "unknown".
+   * `status` is a dependency, so gating it on "unknown" alone meant the timer was torn
+   * down the moment voices loaded with no Japanese one among them — and never re-armed —
+   * leaving `waited` false forever and the answer silent on exactly the devices that
+   * `autoPlayReady` means to let through after the wait.
+   */
+  useEffect(() => {
+    if (!autoPlay || waited || !shouldWaitForVoice(status)) return;
+    const t = window.setTimeout(() => setWaited(true), VOICE_GRACE_MS);
+    return () => window.clearTimeout(t);
+  }, [autoPlay, waited, status]);
+
+  useEffect(() => {
+    if (!autoPlay || played.current || !autoPlayReady(status, waited)) return;
+    played.current = true;
+    speak(text, id);
+  }, [autoPlay, status, waited, speak, text, id]);
+
   if (!canSpeak) return null;
   const playing = speakingId === id;
 
@@ -54,16 +85,29 @@ export function SpeakButton({
 }
 
 /**
- * Shown once where audio would otherwise be, when the device cannot speak Japanese.
- * Renders nothing when it can, so the common case stays uncluttered.
+ * Explains the audio when it is not going to be right: either there is no synthesiser
+ * at all, or there is one with no Japanese voice, which reads the sentence in the wrong
+ * accent. Renders nothing when a Japanese voice was found, so the common case stays
+ * uncluttered.
  */
 export function SpeechNotice({ className = "" }: { className?: string }) {
-  const { canSpeak } = useSpeech();
-  if (canSpeak) return null;
+  const { status } = useSpeech();
+  if (status === "unknown" || status === "ready") return null;
+  const box = `rounded-card border border-hairline bg-paper px-4 py-3 text-[15px] text-muted ${className}`;
+
+  if (status === "unsupported") {
+    return (
+      <p className={box}>
+        This browser will not read Japanese aloud, so the listen buttons are hidden. Chrome, Edge and Safari all
+        speak it — the written readings below are unaffected either way.
+      </p>
+    );
+  }
   return (
-    <p className={`rounded-card border border-hairline bg-paper px-4 py-3 text-[15px] text-muted ${className}`}>
-      Your device has no Japanese voice installed, so the listen buttons are hidden. Adding Japanese to your
-      system&apos;s language or text-to-speech settings turns them on — the readings below are unaffected.
+    <p className={box}>
+      Your device has no Japanese voice installed, so the sentences are read in whatever voice your browser
+      substitutes and the pronunciation may be off. Adding Japanese under your system&apos;s language or
+      text-to-speech settings fixes it. The written readings are unaffected.
     </p>
   );
 }

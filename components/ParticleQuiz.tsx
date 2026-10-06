@@ -15,7 +15,6 @@ import { QuizHud } from "./QuizHud";
 import { Reading } from "./Reading";
 import { ResultBar } from "./ResultBar";
 import { Sennin, type SenninState } from "./Sennin";
-import { SpeakButton } from "./SpeakButton";
 import { SummaryCard } from "./SummaryCard";
 
 type Phase = "picking" | "question" | "correct" | "wrong" | "summary";
@@ -155,6 +154,7 @@ export function ParticleQuiz() {
           <h2 className="font-display text-[26px] text-primary">Pick how you want to practise</h2>
           <p className="mt-1 text-ink/80">
             Both are open — take them in any order. Each round is {ROUND_LENGTH} sentences and ends with a grade.
+            Each answer is read aloud when it appears, so you hear the sentence as well as read it.
           </p>
 
           <ul className="mt-6 grid gap-3 md:grid-cols-2">
@@ -334,26 +334,20 @@ export function ParticleQuiz() {
               given={last.given}
               givenLabel={mode === "particle-order" ? "you built" : "you chose"}
               notes={phase === "wrong" ? [question.item.note] : []}
+              /*
+               * Both only ever appear once the answer is in. Reading the sentence aloud,
+               * or printing it word by word, would hand over the particle being tested —
+               * and in "put it in order", the order too.
+               */
+              speak={sentenceOf(question.item)}
+              speakLabel={`the sentence, ${question.item.english}`}
               answer={
-                /*
-                 * Only ever rendered once the answer is in. Reading the sentence aloud, or
-                 * printing it word by word, would hand over the particle being tested —
-                 * and in "put it in order", the order too.
-                 */
-                <span className="flex flex-wrap items-center justify-center gap-3">
-                  <SpeakButton
-                    id={`answer-${question.id}`}
-                    text={sentenceOf(question.item)}
-                    label={`the sentence, ${question.item.english}`}
-                    size={36}
-                  />
-                  <Reading
-                    chunks={question.item.chunks}
-                    readings={readingsOf(question.item)}
-                    highlight={question.item.blank}
-                    size="text-[26px]"
-                  />
-                </span>
+                <Reading
+                  chunks={question.item.chunks}
+                  readings={readingsOf(question.item)}
+                  highlight={question.item.blank}
+                  size="text-[26px]"
+                />
               }
               onContinue={next}
             />

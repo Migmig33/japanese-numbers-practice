@@ -1,17 +1,52 @@
+"use client";
+
 import {
   BASIC, BASIC_ROWS, COMBO, COMBO_ROWS, COMBO_VOWELS, DAKUTEN, DAKUTEN_ROWS, rowOf, VOWELS, type Kana,
 } from "@/lib/hiragana";
+import { useSpeech } from "./SpeechProvider";
 
-/** One character with its sound underneath. */
+/** ん, taken from the data rather than restated here: its vowel keeps it out of the grid. */
+const N = BASIC.find((x) => x.kana === "ん")!;
+
+/**
+ * One character with its sound underneath, and pressing it says the sound aloud. The
+ * whole cell is the control rather than carrying a separate icon button: there are over
+ * a hundred of these, and a speaker icon in each would bury the characters themselves.
+ */
 function Cell({ item }: { item: Kana | null }) {
   if (!item) return <td className="p-1" aria-hidden="true" />;
   return (
     <td className="p-1">
-      <div className="flex flex-col items-center rounded-button border border-hairline bg-paper py-2">
-        <span lang="ja" className="jp text-[clamp(22px,5vw,32px)] leading-none text-ink">{item.kana}</span>
-        <span className="mt-1 text-[13px] font-bold text-muted">{item.romaji}</span>
-      </div>
+      <KanaBox item={item} />
     </td>
+  );
+}
+
+/** The bordered character-and-sound box, as a button wherever it can actually speak. */
+function KanaBox({ item, width = "w-full" }: { item: Kana; width?: string }) {
+  const { speak, speakingId, canSpeak } = useSpeech();
+
+  const inner = (
+    <>
+      <span lang="ja" className="jp text-[clamp(22px,5vw,32px)] leading-none text-ink">{item.kana}</span>
+      <span className="mt-1 text-[13px] font-bold text-muted">{item.romaji}</span>
+    </>
+  );
+  const shell = `flex ${width} flex-col items-center rounded-button border bg-paper py-2`;
+
+  // Without a synthesiser it stays a plain box rather than a button that cannot act.
+  if (!canSpeak) return <div className={`${shell} border-hairline`}>{inner}</div>;
+
+  const playing = speakingId === `kana-${item.kana}`;
+  return (
+    <button
+      type="button"
+      onClick={() => speak(item.kana, `kana-${item.kana}`)}
+      aria-label={`Play ${item.kana}, ${item.romaji}`}
+      className={`${shell} transition-colors ${playing ? "border-primary bg-card" : "border-hairline hover:border-primary"}`}
+    >
+      {inner}
+    </button>
   );
 }
 
@@ -59,10 +94,7 @@ export function KanaChart() {
       <Grid caption="The 46 basic characters" rows={BASIC_ROWS} source={BASIC} vowels={VOWELS} columns={VOWELS} />
       {/* ん has no vowel, so it belongs to no row of the grid. */}
       <div className="my-6 flex flex-wrap items-center gap-4 rounded-card border border-hairline bg-card p-4">
-        <div className="flex w-20 flex-col items-center rounded-button border border-hairline bg-paper py-2">
-          <span lang="ja" className="jp text-[32px] leading-none text-ink">ん</span>
-          <span className="mt-1 text-[13px] font-bold text-muted">n</span>
-        </div>
+        <KanaBox item={N} width="w-20" />
         <p className="min-w-0 flex-1 text-[15px] leading-normal text-ink/90">
           <strong className="text-ink">ん stands alone.</strong> It is the only character that is a consonant by
           itself, with no vowel attached, which is why it sits outside the grid — and why Japanese words can end in

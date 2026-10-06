@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { AnswerScore } from "@/lib/scoring";
 import type { ReviewItem } from "@/lib/types";
+import { SpeakButton } from "./SpeakButton";
 
 type Props = {
   kind: "correct" | "wrong";
@@ -18,10 +19,21 @@ type Props = {
   /** Overrides the note box; defaults to the item's note. */
   notes?: string[];
   givenLabel?: string;
+  /**
+   * The Japanese to read aloud, in kana or full script — never romaji. Pass it and the
+   * answer speaks itself the moment this bar appears, with a button to hear it again.
+   * Prefer kana over kanji where the two differ: 四時 is read yoji, but a synthesiser
+   * handed the kanji may well say yonji, and the whole point is the sound.
+   */
+  speak?: string;
+  /** For screen readers, e.g. "the reading, roppyaku". Defaults to "the answer". */
+  speakLabel?: string;
 };
 
 /** Feedback bar that rises from the bottom of the quiz card. */
-export function ResultBar({ kind, item, score, given, onContinue, answer, kana, notes, givenLabel = "you typed" }: Props) {
+export function ResultBar({
+  kind, item, score, given, onContinue, answer, kana, notes, givenLabel = "you typed", speak, speakLabel,
+}: Props) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     buttonRef.current?.focus({ preventScroll: true });
@@ -35,7 +47,19 @@ export function ResultBar({ kind, item, score, given, onContinue, answer, kana, 
       }`}
     >
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="min-w-0">
+        <div className="flex min-w-0 items-center gap-3">
+          {speak && (
+            <SpeakButton
+              /* Mounts with the bar, so each revealed answer is spoken exactly once. */
+              key={item.id}
+              id={`answer-${item.id}`}
+              text={speak}
+              label={speakLabel ?? "the answer"}
+              size={40}
+              autoPlay
+            />
+          )}
+          <div className="min-w-0">
           <p lang="ja" className={`jp text-jp ${correct ? "text-correct" : "text-wrong"}`}>
             {correct ? "正解!" : "おしい!"}
           </p>
@@ -53,6 +77,7 @@ export function ResultBar({ kind, item, score, given, onContinue, answer, kana, 
               {given.trim() && <span className="text-muted"> — {givenLabel} “{given.trim()}”</span>}
             </p>
           )}
+          </div>
         </div>
         {kana && (
           <p lang="ja" className="jp mt-1 w-full text-[19px] text-muted">{kana}</p>

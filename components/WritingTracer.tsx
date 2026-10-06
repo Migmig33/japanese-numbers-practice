@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { KANA_GUIDES, KANJI_GUIDES, kanaTrace, kanjiTrace, type TraceGuide } from "@/lib/strokes";
+import { SpeakButton, SpeechNotice } from "./SpeakButton";
 import { TraceCanvas } from "./TraceCanvas";
 
 type Script = "kanji" | "kana";
@@ -89,7 +90,16 @@ export function WritingTracer() {
           </div>
           <div className="rounded-card bg-paper px-4 py-3 text-center">
             <dt className="text-[14px] font-bold text-muted">Reading</dt>
-            <dd className="mt-1 font-display text-[24px] font-black text-primary">{guide.reading}</dd>
+            <dd className="mt-1 flex items-center justify-center gap-2">
+              <span className="font-display text-[24px] font-black text-primary">{guide.reading}</span>
+              {/* Hearing it while tracing ties the shape to the sound. */}
+              <SpeakButton
+                id={`trace-${guide.char}`}
+                text={guide.kana}
+                label={`${guide.char}, ${guide.reading}`}
+                size={32}
+              />
+            </dd>
           </div>
           <div className="rounded-card bg-paper px-4 py-3 text-center">
             <dt className="text-[14px] font-bold text-muted">Strokes</dt>
@@ -97,6 +107,8 @@ export function WritingTracer() {
           </div>
         </dl>
       </div>
+
+      <SpeechNotice className="mt-6" />
 
       {guide.note ? (
         <p className="mt-6 rounded-card border border-hairline bg-paper px-5 py-3 text-[15px] text-ink/85">{guide.note}</p>

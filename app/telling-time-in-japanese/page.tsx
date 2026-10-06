@@ -4,6 +4,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { ContentPage } from "@/components/PageShell";
 import { TimeQuiz } from "@/components/TimeQuiz";
 import { ReferenceTable } from "@/components/ReferenceTable";
+import { SpeechNotice } from "@/components/SpeakButton";
 import { RelatedCards } from "@/components/RelatedCards";
 import { ITEMS, itemsInSet } from "@/lib/items";
 import { quizJsonLd } from "@/lib/jsonld";
@@ -73,7 +74,11 @@ export default function TimePage() {
       reference={
         <section aria-labelledby="reference">
           <h2 id="reference" className="mt-4 text-[30px] text-primary">Hours and minutes chart</h2>
-          <p className="mt-2 text-ink/90">The irregular readings are the ones to watch: 4, 7 and 9 o&apos;clock, and the pun minutes.</p>
+          <p className="mt-2 text-ink/90">
+            The irregular readings are the ones to watch: 4, 7 and 9 o&apos;clock, and the pun minutes. Press a listen
+            button to hear one — 四時 is yoji and 九時 is kuji, and hearing them settles it faster than reading them.
+          </p>
+          <SpeechNotice className="my-6" />
           <ReferenceTable caption="Hours" items={itemsInSet("hours")} valueHeader="Time" value={(i) => `${i.value}:00`} showNotes />
           <ReferenceTable
             caption="Minutes"

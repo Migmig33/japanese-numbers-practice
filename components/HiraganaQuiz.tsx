@@ -162,6 +162,7 @@ export function HiraganaQuiz() {
           <h2 className="font-display text-[26px] text-primary">Pick how you want to practise</h2>
           <p className="mt-1 text-ink/80">
             All three are open — take them in any order. Each round is {ROUND_LENGTH} characters and ends with a grade.
+            Every answer is read aloud when it appears, so you hear the sound as well as see the character.
           </p>
 
           <ul className="mt-6 grid gap-3 md:grid-cols-3">
@@ -328,6 +329,8 @@ export function HiraganaQuiz() {
               given={last.given}
               givenLabel={mode === "kana-type" ? "you typed" : "you chose"}
               notes={phase === "wrong" && question.item.note ? [question.item.note] : []}
+              speak={question.item.kana}
+              speakLabel={`the character, ${question.item.romaji}`}
               answer={
                 <>
                   <span lang="ja" className="jp mr-2 inline-block align-middle text-[34px]">{question.item.kana}</span>

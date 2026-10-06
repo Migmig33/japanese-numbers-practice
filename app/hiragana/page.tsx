@@ -4,6 +4,7 @@ import { Faq, type FaqItem } from "@/components/Faq";
 import { HiraganaQuiz } from "@/components/HiraganaQuiz";
 import { JsonLd } from "@/components/JsonLd";
 import { KanaChart } from "@/components/KanaChart";
+import { SpeechNotice } from "@/components/SpeakButton";
 import { ContentPage } from "@/components/PageShell";
 import { RelatedCards } from "@/components/RelatedCards";
 import { ALL_KANA } from "@/lib/hiragana";
@@ -81,8 +82,9 @@ export default function HiraganaPage() {
           <h2 id="reference" className="mt-4 text-[30px] text-primary">The hiragana chart</h2>
           <p className="mt-2 text-ink/90">
             Read each grid left to right: the consonant down the side, the vowel across the top. か is k plus a, き is
-            k plus i, and so on. Only や行 and わ行 have gaps.
+            k plus i, and so on. Only や行 and わ行 have gaps. Press any character to hear it said aloud.
           </p>
+          <SpeechNotice className="my-6" />
           <KanaChart />
 
           <h3 className="mt-10 text-[24px] text-primary">The ones people mix up</h3>

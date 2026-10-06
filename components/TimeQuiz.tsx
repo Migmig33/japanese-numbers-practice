@@ -161,6 +161,7 @@ export function TimeQuiz() {
           <h2 className="font-display text-[26px] text-primary">Pick how you want to practise</h2>
           <p className="mt-1 text-ink/80">
             All three are open — take them in any order. Each round is {ROUND_LENGTH} times and ends with a grade.
+            Every answer is read aloud when it appears, so you hear the reading as well as see it.
           </p>
 
           <ul className="mt-6 grid gap-3 md:grid-cols-3">
@@ -333,6 +334,9 @@ export function TimeQuiz() {
               givenLabel={mode === "time-say" ? "you typed" : mode === "time-set" ? "you set" : "you chose"}
               kana={timeKana(question.time)}
               notes={last.note ? [last.note] : []}
+              /* 四時 is yoji and 九時 is kuji; only the kana guarantees the voice says so. */
+              speak={timeKana(question.time)}
+              speakLabel={`the time, ${question.reading}`}
               answer={
                 <>
                   <span className="mr-2 align-middle font-bold tabular-nums">{question.digital}</span>
