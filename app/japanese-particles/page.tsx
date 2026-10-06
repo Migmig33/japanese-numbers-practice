@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { Faq, type FaqItem } from "@/components/Faq";
 import { JsonLd } from "@/components/JsonLd";
 import { ContentPage } from "@/components/PageShell";
+import { ParticleChart } from "@/components/ParticleChart";
 import { ParticleQuiz } from "@/components/ParticleQuiz";
 import { RelatedCards } from "@/components/RelatedCards";
 import { quizJsonLd } from "@/lib/jsonld";
-import { PARTICLES } from "@/lib/particles";
 import { pageMetadata } from "@/lib/site";
 
 export function generateMetadata(): Metadata {
@@ -60,36 +60,10 @@ export default function ParticlesPage() {
         <section aria-labelledby="reference">
           <h2 id="reference" className="mt-4 text-[30px] text-primary">Particle chart</h2>
           <p className="mt-2 text-ink/90">
-            The eleven you meet first. Note how は, を and へ are said differently from how they are written.
+            The eleven you meet first, each with its reading underneath. Press a listen button to hear it — note how
+            は, を and へ are said differently from how they are written.
           </p>
-          <div className="my-6 overflow-x-auto rounded-card border border-hairline bg-card">
-            <table className="w-full border-collapse text-left">
-              <caption className="px-5 pt-4 pb-2 text-left font-display text-[20px] font-black text-primary">
-                What each particle does
-              </caption>
-              <thead>
-                <tr className="border-b border-hairline text-[14px] text-muted">
-                  <th scope="col" className="px-5 py-2 font-bold">Particle</th>
-                  <th scope="col" className="px-5 py-2 font-bold">Said</th>
-                  <th scope="col" className="px-5 py-2 font-bold">Job</th>
-                  <th scope="col" className="px-5 py-2 font-bold">Example</th>
-                </tr>
-              </thead>
-              <tbody>
-                {PARTICLES.map((p) => (
-                  <tr key={p.jp} className="border-b border-hairline last:border-b-0">
-                    <td lang="ja" className="jp px-5 py-2 text-jp whitespace-nowrap text-ink">{p.jp}</td>
-                    <td className="px-5 py-2 font-bold text-primary">{p.romaji}</td>
-                    <td className="px-5 py-2 text-[15px] leading-normal text-ink/90">{p.job}</td>
-                    <td className="px-5 py-2">
-                      <span lang="ja" className="jp block text-[20px] whitespace-nowrap text-ink">{p.example}</span>
-                      <span className="block text-[14px] text-muted">{p.exampleEnglish}</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ParticleChart />
 
           <h3 className="mt-10 text-[24px] text-primary">The three that trip everyone up</h3>
           <div className="mt-3 space-y-4 text-ink/90">

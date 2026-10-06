@@ -48,15 +48,23 @@ export type ParticleInfo = {
   jp: string;
   /** How it is said — は is written ha but said wa. */
   romaji: string;
+  /**
+   * What to hand the speech synthesiser, where the particle is said differently from how
+   * it is written. A voice given a bare は says "ha", the word, rather than "wa", the
+   * particle, so these carry the kana for the sound the romaji column already states.
+   * Whole sentences need no such help: a Japanese voice reads particle は as wa from
+   * context, which is why only the single characters carry this.
+   */
+  speak?: string;
   job: string;
   example: string;
   exampleEnglish: string;
 };
 
 export const PARTICLES: readonly ParticleInfo[] = [
-  { jp: "は", romaji: "wa", job: "Marks the topic — what the sentence is about.", example: "わたしは学生です。", exampleEnglish: "I am a student." },
+  { jp: "は", romaji: "wa", speak: "わ", job: "Marks the topic — what the sentence is about.", example: "わたしは学生です。", exampleEnglish: "I am a student." },
   { jp: "が", romaji: "ga", job: "Marks the subject, and goes with あります, います and すき.", example: "犬がいます。", exampleEnglish: "There is a dog." },
-  { jp: "を", romaji: "o", job: "Marks the object — the thing the verb acts on.", example: "パンを食べます。", exampleEnglish: "I eat bread." },
+  { jp: "を", romaji: "o", speak: "お", job: "Marks the object — the thing the verb acts on.", example: "パンを食べます。", exampleEnglish: "I eat bread." },
   { jp: "に", romaji: "ni", job: "A point in time, a destination, or where something exists.", example: "三時に会いましょう。", exampleEnglish: "Let's meet at three." },
   { jp: "で", romaji: "de", job: "Where an action happens, or what you do it with.", example: "うちで食べます。", exampleEnglish: "I eat at home." },
   { jp: "の", romaji: "no", job: "Joins two nouns: whose, or which kind.", example: "わたしの本です。", exampleEnglish: "It is my book." },
@@ -207,6 +215,20 @@ const shuffle = <T,>(xs: readonly T[], rng: () => number): T[] => {
   }
   return a;
 };
+
+/**
+ * Each chunk's reading, in order. `romaji` is stored space-separated in the same order
+ * as `chunks`, so this is a split rather than anything derived — and null when an item
+ * ever breaks that alignment, so a caller shows nothing instead of readings sitting
+ * under the wrong words. A test holds every item to the invariant.
+ */
+export function readingsOf(item: ParticleItem): string[] | null {
+  const parts = item.romaji.trim().split(/\s+/);
+  return parts.length === item.chunks.length ? parts : null;
+}
+
+/** What to speak for a particle on its own, which is not always how it is written. */
+export const spokenForm = (p: ParticleInfo) => p.speak ?? p.jp;
 
 export const answerOf = (item: ParticleItem) => item.chunks[item.blank]!;
 export const sentenceOf = (item: ParticleItem) => item.chunks.join("");
