@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { BASIC } from "./hiragana";
 import { ITEMS_BY_ID } from "./items";
-import { KANA_GUIDES, KANJI_GUIDES, kanaTrace, kanjiTrace } from "./strokes";
+import { KANA_GUIDES, KANJI_GUIDES, KATAKANA_GUIDES, kanaTrace, kanjiTrace } from "./strokes";
 
 // Standard stroke counts.
 const COUNTS: Record<string, number> = {
@@ -66,6 +66,23 @@ describe("kanji guides", () => {
 describe("kana guides", () => {
   it("covers all 46 basic hiragana, in chart order", () => {
     expect(KANA_GUIDES.map((g) => g.char)).toEqual(BASIC.map((k) => k.kana));
+  });
+
+  describe("katakana guides", () => {
+    it("covers the same 46 basic sounds in katakana", () => {
+      expect(KATAKANA_GUIDES).toHaveLength(46);
+      expect(KATAKANA_GUIDES[0]!.char).toBe("ア");
+      expect(KATAKANA_GUIDES.at(-1)!.char).toBe("ン");
+    });
+
+    it("uses the katakana stroke counts", () => {
+      const counts = [2, 2, 3, 3, 3, 2, 3, 2, 3, 2, 3, 3, 2, 2, 1, 3, 3, 3, 3, 2, 2, 2, 2, 4, 1, 2, 2, 4, 1, 4, 2, 3, 2, 2, 3, 2, 2, 3, 2, 2, 1, 1, 3, 2, 3, 2];
+      expect(KATAKANA_GUIDES.map((g) => g.starts.length)).toEqual(counts);
+    });
+
+    it("keeps the readings aligned with the hiragana guides", () => {
+      expect(KATAKANA_GUIDES.map((g) => g.reading)).toEqual(KANA_GUIDES.map((g) => g.reading));
+    });
   });
 
   it("has no duplicates", () => {

@@ -18,42 +18,41 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export type VoiceLike = { lang: string; name: string; localService?: boolean; default?: boolean };
 
 /**
- * Japanese voices known to be male, by name. SpeechSynthesisVoice carries no gender
- * field, so the name is the only thing to go on. These are the ja-JP voices shipped by
- * Windows (Ichiro, Keita, Naoki), the Azure/Edge natural set (Keita, Daichi, Naoki) and
- * macOS (Otoya, Hattori). The female ones — Haruka, Nanami, Ayumi, Kyoko, Aoi, Mayu,
- * Shiori — are simply the ones not named here.
+ * Japanese voices known to be female, by name. SpeechSynthesisVoice carries no gender
+ * field, so the name is the only thing to go on. These cover the common Windows,
+ * Azure/Edge and macOS Japanese voices.
  */
-export const MALE_JAPANESE_VOICES = ["ichiro", "keita", "daichi", "naoki", "otoya", "hattori", "masaru"] as const;
+export const FEMALE_JAPANESE_VOICES = ["haruka", "nanami", "ayumi", "kyoko", "aoi", "mayu", "shiori"] as const;
 
 /**
- * Whether a voice name denotes a man. Some platforms say so outright, e.g. "Japanese
- * Male", so the name is split into words and matched whole — a substring test would
- * read "female" as male.
+ * Whether a voice name denotes a woman. Some platforms say so outright, e.g.
+ * "Japanese Female".
  */
-export function isMaleVoice(name: string): boolean {
+export function isFemaleVoice(name: string): boolean {
   const n = name.toLowerCase();
-  return n.split(/[^a-z]+/).includes("male") || MALE_JAPANESE_VOICES.some((m) => n.includes(m));
+  return n.split(/[^a-z]+/).includes("female") || FEMALE_JAPANESE_VOICES.some((female) => n.includes(female));
+}
+
+/** Google voices are intentionally excluded so playback uses the device's own voice. */
+export function isGoogleVoice(name: string): boolean {
+  return name.toLowerCase().includes("google");
 }
 
 /**
  * The best Japanese voice among those the device offers, or null if it has none.
  *
- * A male voice wins over any female one: every reading on the site is Sennin speaking,
- * and he is an old hermit — PITCH does the rest of that. Below that, local voices are
- * preferred, since they work offline and start without a network round trip. The
- * cascade runs over the male voices first and the full list second, so a device whose
- * only Japanese voices are female still gets its best one rather than none.
+ * A female voice wins over any other non-Google Japanese voice. Below that, local voices
+ * are preferred, since they work offline and start without a network round trip.
  */
 export function pickJapaneseVoice<T extends VoiceLike>(voices: readonly T[]): T | null {
-  const ja = voices.filter((v) => /^ja(\b|[-_])/i.test(v.lang));
+  const ja = voices.filter((v) => /^ja(\b|[-_])/i.test(v.lang) && !isGoogleVoice(v.name));
   if (ja.length === 0) return null;
   const best = (pool: readonly T[]) =>
     pool.find((v) => v.localService && v.default) ??
     pool.find((v) => v.localService) ??
     pool.find((v) => v.default) ??
     pool[0];
-  return best(ja.filter((v) => isMaleVoice(v.name))) ?? best(ja)!;
+  return best(ja.filter((v) => isFemaleVoice(v.name))) ?? best(ja)!;
 }
 
 /**
@@ -88,11 +87,10 @@ export function isFatalSpeechError(code: string): boolean {
 const RATE = 0.85;
 
 /**
- * Sennin is old, so he speaks below the voice's natural pitch. Kept at 0.8 rather than
- * lower: the audio exists to be copied by a learner, and under about 0.6 the
- * synthesiser's vowels start to smear and the pitch accent goes with them.
+ * Keep the voice near its natural pitch: the audio exists to be copied by a learner,
+ * and changing pitch can blur the vowels and pitch accent.
  */
-const PITCH = 0.8;
+const PITCH = 1;
 
 /**
  * How long an auto-play waits for `getVoices()` to fill in before speaking anyway.
@@ -186,7 +184,7 @@ export function useSpeechEngine() {
        * asynchronously, so by the time a button is actually pressed the browser often
        * knows about voices it had not reported when this hook mounted — and an
        * utterance with no voice set falls back to the browser's default for ja-JP,
-       * losing the male preference.
+       * losing the female preference.
        */
       const best = voice ?? pickJapaneseVoice(synth.getVoices());
       if (best) u.voice = best as SpeechSynthesisVoice;

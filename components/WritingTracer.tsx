@@ -1,21 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { KANA_GUIDES, KANJI_GUIDES, kanaTrace, kanjiTrace, type TraceGuide } from "@/lib/strokes";
+import { KANA_GUIDES, KANJI_GUIDES, KATAKANA_GUIDES, kanaTrace, kanjiTrace, type TraceGuide } from "@/lib/strokes";
 import { SpeakButton, SpeechNotice } from "./SpeakButton";
 import { TraceCanvas } from "./TraceCanvas";
 
-type Script = "kanji" | "kana";
+type Script = "kanji" | "hiragana" | "katakana";
 
 const SCRIPTS: { id: Script; jp: string; label: string; hint: string }[] = [
   { id: "kanji", jp: "漢字", label: "Kanji", hint: "The number kanji, 一 to 万" },
-  { id: "kana", jp: "ひらがな", label: "Hiragana", hint: "All 46 basic characters" },
+  { id: "hiragana", jp: "ひらがな", label: "Hiragana", hint: "All 46 basic characters" },
+  { id: "katakana", jp: "カタカナ", label: "Katakana", hint: "All 46 basic characters" },
 ];
 
 /** Both scripts as tracing guides, built once rather than per render. */
 const GUIDES: Record<Script, readonly TraceGuide[]> = {
   kanji: KANJI_GUIDES.map(kanjiTrace),
-  kana: KANA_GUIDES.map(kanaTrace),
+  hiragana: KANA_GUIDES.map(kanaTrace),
+  katakana: KATAKANA_GUIDES.map(kanaTrace),
 };
 
 export function WritingTracer() {
@@ -59,7 +61,7 @@ export function WritingTracer() {
       <h3 className="mt-8 font-display text-[21px] text-primary">
         {isKanji ? "Pick a kanji to trace" : "Pick a character to trace"}
       </h3>
-      <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label={isKanji ? "Kanji" : "Hiragana"}>
+      <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label={isKanji ? "Kanji" : script}>
         {guides.map((g, i) => (
           <button
             key={g.char}

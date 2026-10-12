@@ -7,7 +7,6 @@ import { KanaChart } from "@/components/KanaChart";
 import { SpeechNotice } from "@/components/SpeakButton";
 import { ContentPage } from "@/components/PageShell";
 import { RelatedCards } from "@/components/RelatedCards";
-import { ALL_KANA } from "@/lib/hiragana";
 import { quizJsonLd } from "@/lib/jsonld";
 import { PAGES, pageMetadata } from "@/lib/site";
 
@@ -60,9 +59,8 @@ export default function HiraganaPage() {
       intro={
         <>
           <p>
-            Hiragana is where Japanese starts. {ALL_KANA.length} characters, each one a sound rather than a meaning —
-            learn them and you can read every word on this site aloud, even the ones written in kanji, because the
-            readings underneath are all hiragana.
+            Hiragana is where Japanese starts. Learn its 46 basic sounds, then add dakuten, handakuten, and
+            combinations as they feel steady. Hiragana writes grammar, verb endings, and many native Japanese words.
           </p>
           <p>
             Practise three ways: see a character and pick its sound, hear a sound and pick the character, or type it
@@ -73,19 +71,19 @@ export default function HiraganaPage() {
       }
       widget={
         <>
-          <HiraganaQuiz />
+          <HiraganaQuiz script="hiragana" />
           <JsonLd data={quizJsonLd("hiragana", ["Hiragana", "Japanese alphabet", "Japanese writing system"])} />
         </>
       }
       reference={
         <section aria-labelledby="reference">
-          <h2 id="reference" className="mt-4 text-[30px] text-primary">The hiragana chart</h2>
+          <h2 id="reference" className="mt-4 text-[30px] text-primary">Hiragana chart</h2>
           <p className="mt-2 text-ink/90">
             Read each grid left to right: the consonant down the side, the vowel across the top. か is k plus a, き is
             k plus i, and so on. Only や行 and わ行 have gaps. Press any character to hear it said aloud.
           </p>
           <SpeechNotice className="my-6" />
-          <KanaChart />
+          <KanaChart script="hiragana" />
 
           <h3 className="mt-10 text-[24px] text-primary">The ones people mix up</h3>
           <div className="my-6 overflow-x-auto rounded-card border border-hairline bg-card">

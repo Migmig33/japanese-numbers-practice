@@ -110,9 +110,22 @@ export const COMBO: readonly Kana[] = [
 
 export const ALL_KANA: readonly Kana[] = [...BASIC, ...DAKUTEN, ...COMBO];
 
+/** Katakana has the same sounds and groupings; its code points sit 0x60 after hiragana. */
+const toKatakana = (kana: string) =>
+  [...kana].map((character) => {
+    const code = character.codePointAt(0)!;
+    return String.fromCodePoint(code >= 0x3041 && code <= 0x3096 ? code + 0x60 : code);
+  }).join("");
+
+export const KATAKANA: readonly Kana[] = ALL_KANA.map((item) => ({
+  ...item,
+  kana: toKatakana(item.kana),
+}));
+export const ALL_KATAKANA = KATAKANA;
+
 /** ぢ and づ duplicate じ and ず, so a question about them would have two right answers. */
 export const AMBIGUOUS = new Set(["ぢ", "づ"]);
-export const quizzable = (x: Kana) => !AMBIGUOUS.has(x.kana);
+export const quizzable = (x: Kana) => !(x.row === "d" && (x.vowel === "i" || x.vowel === "u"));
 
 /** The chart, laid out the way it is normally printed: rows of five. */
 export const VOWELS = ["a", "i", "u", "e", "o"] as const;
@@ -169,6 +182,7 @@ export const HIRAGANA_MODES: Record<HiraganaModeId, HiraganaMode> = {
 };
 
 export type KanaSet = "basic" | "dakuten" | "combo";
+export type KanaScript = "hiragana" | "katakana";
 
 export type KanaQuestion = {
   id: string;
@@ -186,9 +200,10 @@ const shuffle = <T,>(xs: readonly T[], rng: () => number): T[] => {
   return a;
 };
 
-export function kanaPool(sets: readonly KanaSet[]): Kana[] {
+export function kanaPool(sets: readonly KanaSet[], script: KanaScript = "hiragana"): Kana[] {
   const wanted = new Set(sets.length ? sets : (["basic"] as KanaSet[]));
-  return ALL_KANA.filter((x) => wanted.has(x.group) && quizzable(x));
+  const source = script === "katakana" ? KATAKANA : ALL_KANA;
+  return source.filter((x) => wanted.has(x.group) && quizzable(x));
 }
 
 /**
@@ -215,10 +230,11 @@ export function kanaOptions(item: Kana, pool: readonly Kana[], mode: HiraganaMod
 
 export function buildKanaRound(
   mode: HiraganaModeId,
-  { sets = ["basic"] as KanaSet[], length = ROUND_LENGTH }: { sets?: KanaSet[]; length?: number } = {},
+  { sets = ["basic"] as KanaSet[], length = ROUND_LENGTH, script = "hiragana" as KanaScript }:
+    { sets?: KanaSet[]; length?: number; script?: KanaScript } = {},
   rng: () => number = Math.random,
 ): KanaQuestion[] {
-  const pool = kanaPool(sets);
+  const pool = kanaPool(sets, script);
   const picked = shuffle(pool, rng).slice(0, Math.min(length, pool.length));
   return picked.map((item) => ({
     id: `${mode}-${item.kana}`,

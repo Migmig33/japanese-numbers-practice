@@ -20,7 +20,7 @@ export const GOOGLE_SITE_VERIFICATION =
   process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ?? "JjabwTVW-jou9Z7r5v-qAa0sU6pqeksQAfgaW2chjEY";
 
 export type PageKey =
-  | "home" | "hiragana" | "numbers" | "time" | "writing" | "particles" | "progress"
+  | "home" | "hiragana" | "katakana" | "numbers" | "time" | "writing" | "particles" | "progress"
   | "about" | "contact" | "privacy" | "terms";
 
 export type PageInfo = {
@@ -51,9 +51,19 @@ export const PAGES: Record<PageKey, PageInfo> = {
     name: "Hiragana",
     title: "Hiragana Chart and Quiz — Learn All 46 Characters",
     description:
-      "The full hiragana chart with sounds, the look-alikes that cost beginners time, and three quizzes: read it, find it, or type it from memory.",
-    blurb: "The full chart, the look-alikes, and three quizzes.",
+      "Learn hiragana with a full chart, sounds, and three quizzes: read it, find it, or type it from memory.",
+    blurb: "The full hiragana chart, look-alikes, and three quizzes.",
     glyph: "あ",
+  },
+  katakana: {
+    path: "/katakana",
+    nav: "Katakana",
+    name: "Katakana",
+    title: "Katakana Chart and Quiz — Learn All 46 Characters",
+    description:
+      "Learn katakana with a full chart, sounds, and three quizzes: read it, find it, or type it from memory.",
+    blurb: "The full katakana chart and three quizzes.",
+    glyph: "カ",
   },
   numbers: {
     path: "/japanese-numbers-quiz",
@@ -144,7 +154,7 @@ export const PAGES: Record<PageKey, PageInfo> = {
   },
 };
 
-export const NAV: PageKey[] = ["hiragana", "numbers", "time", "particles", "writing", "progress"];
+export const NAV: PageKey[] = ["hiragana", "katakana", "numbers", "time", "particles", "writing", "progress"];
 
 export function pageMetadata(key: PageKey, extra: Partial<Metadata> = {}): Metadata {
   const p = PAGES[key];

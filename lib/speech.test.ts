@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  autoPlayReady, isFatalSpeechError, isMaleVoice, pickJapaneseVoice, shouldWaitForVoice, type VoiceLike,
+  autoPlayReady, isFatalSpeechError, isFemaleVoice, isGoogleVoice, pickJapaneseVoice, shouldWaitForVoice, type VoiceLike,
 } from "./speech";
 
 const v = (lang: string, name: string, extra: Partial<VoiceLike> = {}): VoiceLike => ({ lang, name, ...extra });
@@ -32,27 +32,27 @@ describe("pickJapaneseVoice", () => {
     expect(pickJapaneseVoice([v("jav", "Javanese"), v("ja-x", "Weird")])?.name).toBe("Weird");
   });
 
-  it("prefers a man: Sennin is an old hermit, not a young woman", () => {
-    const otoya = v("ja-JP", "Otoya");
-    expect(pickJapaneseVoice([v("ja-JP", "Kyoko"), otoya])).toBe(otoya);
-    expect(pickJapaneseVoice([v("ja-JP", "Microsoft Nanami Online (Natural)"), v("ja-JP", "Microsoft Keita")])?.name)
-      .toBe("Microsoft Keita");
+  it("prefers a woman", () => {
+    const kyoko = v("ja-JP", "Kyoko");
+    expect(pickJapaneseVoice([v("ja-JP", "Otoya"), kyoko])).toBe(kyoko);
+    expect(pickJapaneseVoice([v("ja-JP", "Microsoft Keita"), v("ja-JP", "Microsoft Nanami Online (Natural)")])?.name)
+      .toBe("Microsoft Nanami Online (Natural)");
   });
 
-  it("takes a male voice over a better-placed female one", () => {
-    const ichiro = v("ja-JP", "Microsoft Ichiro");
-    const haruka = v("ja-JP", "Microsoft Haruka", { localService: true, default: true });
-    expect(pickJapaneseVoice([haruka, ichiro])).toBe(ichiro);
+  it("takes a female voice over a better-placed non-female one", () => {
+    const other = v("ja-JP", "Microsoft Keita", { localService: true, default: true });
+    const haruka = v("ja-JP", "Microsoft Haruka");
+    expect(pickJapaneseVoice([other, haruka])).toBe(haruka);
   });
 
-  it("still picks the best female voice when no man is on offer", () => {
-    const local = v("ja-JP", "Kyoko", { localService: true });
-    expect(pickJapaneseVoice([v("ja-JP", "Nanami"), local])).toBe(local);
+  it("still picks the best non-Google voice when no named woman is on offer", () => {
+    const local = v("ja-JP", "Device Japanese", { localService: true });
+    expect(pickJapaneseVoice([v("ja-JP", "Other Japanese"), local])).toBe(local);
   });
 
-  it("prefers a local man over a remote one", () => {
-    const local = v("ja-JP", "Keita", { localService: true });
-    expect(pickJapaneseVoice([v("ja-JP", "Daichi", { localService: false }), local])).toBe(local);
+  it("does not select Google voices", () => {
+    expect(pickJapaneseVoice([v("ja-JP", "Google Japanese"), v("ja-JP", "Kyoko")])?.name).toBe("Kyoko");
+    expect(pickJapaneseVoice([v("ja-JP", "Google Japanese")])).toBeNull();
   });
 
   it("prefers a local voice over a remote one", () => {
@@ -145,25 +145,33 @@ describe("isFatalSpeechError", () => {
   });
 });
 
-describe("isMaleVoice", () => {
-  it("knows the named Japanese men", () => {
-    for (const n of ["Microsoft Ichiro", "Keita", "ja-JP-DaichiNeural", "Otoya", "Hattori"]) {
-      expect(isMaleVoice(n)).toBe(true);
+describe("isFemaleVoice", () => {
+  it("knows the named Japanese women", () => {
+    for (const n of ["Microsoft Haruka Desktop", "Nanami", "Ayumi", "Kyoko", "Aoi", "Mayu", "Shiori"]) {
+      expect(isFemaleVoice(n)).toBe(true);
     }
   });
 
-  it("does not claim the Japanese women", () => {
-    for (const n of ["Microsoft Haruka Desktop", "Kyoko", "Nanami", "Ayumi", "Aoi", "Mayu", "Shiori"]) {
-      expect(isMaleVoice(n)).toBe(false);
+  it("does not claim other voices are women", () => {
+    for (const n of ["Microsoft Ichiro", "Keita", "ja-JP-DaichiNeural", "Otoya", "Hattori"]) {
+      expect(isFemaleVoice(n)).toBe(false);
     }
   });
 
   it("reads a platform that states the gender outright", () => {
-    expect(isMaleVoice("Japanese Male")).toBe(true);
+    expect(isFemaleVoice("Japanese Female")).toBe(true);
   });
 
-  it("does not read 'female' as male", () => {
-    expect(isMaleVoice("Japanese Female")).toBe(false);
-    expect(isMaleVoice("ja-JP-FemaleVoice")).toBe(false);
+  it("does not read 'female' as a name match for other genders", () => {
+    expect(isFemaleVoice("Japanese Male")).toBe(false);
+    expect(isFemaleVoice("ja-JP-MaleVoice")).toBe(false);
+  });
+});
+
+describe("isGoogleVoice", () => {
+  it("recognises Google voice names case-insensitively", () => {
+    expect(isGoogleVoice("Google Japanese")).toBe(true);
+    expect(isGoogleVoice("google 日本語")).toBe(true);
+    expect(isGoogleVoice("Microsoft Haruka")).toBe(false);
   });
 });

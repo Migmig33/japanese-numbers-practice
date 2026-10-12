@@ -35,8 +35,8 @@ const FAQ: FaqItem[] = [
     a: "Both. Digits are standard in horizontal text, prices and timetables. Kanji appear in vertical writing, set phrases, formal documents and on things like shop signs and menus, so you need to read both.",
   },
   {
-    q: "Does hiragana have a stroke order too?",
-    a: "Yes, and it follows the same habits: top to bottom, left to right, and the long sweeping stroke usually last. Hiragana came from simplified cursive kanji, so the logic carried over. Switch the tracer to ひらがな for all 46 basic characters with their stroke counts and numbered starts — き is four strokes, さ three, り two, though all three are sometimes joined into fewer in casual handwriting and in some fonts.",
+    q: "Do hiragana and katakana have stroke order too?",
+    a: "Yes. Both kana scripts have a standard stroke order that keeps the characters balanced and legible. Switch the tracer to ひらがな or カタカナ for all 46 basic characters with their stroke counts and numbered starts.",
   },
   {
     q: "How do you write a number like 102 in kanji?",
@@ -79,16 +79,16 @@ export default function WritingPage() {
       page="writing"
       intro={
         <p>
-          Trace over the guide, in either script: the number kanji 一 to 万, or all 46 basic hiragana. The numbered
-          dots show where every stroke begins and in what order, and the counter tells you when you have drawn the
-          right number of strokes. The chart below shows how the kanji combine into whole numbers — 102 is 百二,
+          Trace over the guide: the number kanji 一 to 万, all 46 basic hiragana, or all 46 basic katakana. The
+          numbered dots show where every stroke begins and in what order, and the counter tells you when you have
+          drawn the right number of strokes. The chart below shows how the kanji combine into whole numbers — 102 is 百二,
           3,684 is 三千六百八十四.
         </p>
       }
       widget={
         <>
           <WritingTracer />
-          <JsonLd data={quizJsonLd("writing", ["Japanese number kanji", "Kanji stroke order", "Hiragana stroke order", "Japanese handwriting"])} />
+          <JsonLd data={quizJsonLd("writing", ["Japanese number kanji", "Kanji stroke order", "Hiragana stroke order", "Katakana stroke order", "Japanese handwriting"])} />
         </>
       }
       reference={

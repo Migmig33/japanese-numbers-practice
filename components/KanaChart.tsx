@@ -1,12 +1,10 @@
 "use client";
 
 import {
-  BASIC, BASIC_ROWS, COMBO, COMBO_ROWS, COMBO_VOWELS, DAKUTEN, DAKUTEN_ROWS, rowOf, VOWELS, type Kana,
+  ALL_KANA, BASIC, BASIC_ROWS, COMBO, COMBO_ROWS, COMBO_VOWELS, DAKUTEN, DAKUTEN_ROWS, KATAKANA, rowOf, VOWELS, type Kana,
+  type KanaScript,
 } from "@/lib/hiragana";
 import { useSpeech } from "./SpeechProvider";
-
-/** ん, taken from the data rather than restated here: its vowel keeps it out of the grid. */
-const N = BASIC.find((x) => x.kana === "ん")!;
 
 /**
  * One character with its sound underneath, and pressing it says the sound aloud. The
@@ -88,33 +86,31 @@ function Grid({
 }
 
 /** The full syllabary, laid out the way it is normally printed. */
-export function KanaChart() {
+function ChartSet({ source, title }: { source: readonly Kana[]; title: string }) {
+  const basic = source.slice(0, BASIC.length);
+  const dakuten = source.slice(BASIC.length, BASIC.length + DAKUTEN.length);
+  const combo = source.slice(BASIC.length + DAKUTEN.length);
+  const n = basic.find((x) => x.kana === (source === KATAKANA ? "ン" : "ん"))!;
   return (
     <>
-      <Grid caption="The 46 basic characters" rows={BASIC_ROWS} source={BASIC} vowels={VOWELS} columns={VOWELS} />
-      {/* ん has no vowel, so it belongs to no row of the grid. */}
+      <h3 className="mt-8 text-[24px] text-primary">{title}</h3>
+      <Grid caption="The 46 basic characters" rows={BASIC_ROWS} source={basic} vowels={VOWELS} columns={VOWELS} />
       <div className="my-6 flex flex-wrap items-center gap-4 rounded-card border border-hairline bg-card p-4">
-        <KanaBox item={N} width="w-20" />
+        <KanaBox item={n} width="w-20" />
         <p className="min-w-0 flex-1 text-[15px] leading-normal text-ink/90">
-          <strong className="text-ink">ん stands alone.</strong> It is the only character that is a consonant by
-          itself, with no vowel attached, which is why it sits outside the grid — and why Japanese words can end in
-          an n sound but no other consonant.
+          <strong className="text-ink">{n.kana} stands alone.</strong> It is the only kana that is a consonant by
+          itself, with no vowel attached.
         </p>
       </div>
-      <Grid
-        caption="With a dakuten ゛or handakuten ゜"
-        rows={DAKUTEN_ROWS}
-        source={DAKUTEN}
-        vowels={VOWELS}
-        columns={VOWELS}
-      />
-      <Grid
-        caption="Combinations with small ゃ, ゅ, ょ"
-        rows={COMBO_ROWS}
-        source={COMBO}
-        vowels={COMBO_VOWELS}
-        columns={["ya", "yu", "yo"]}
-      />
+      <Grid caption="With a dakuten ゛or handakuten ゜" rows={DAKUTEN_ROWS} source={dakuten} vowels={VOWELS} columns={VOWELS} />
+      <Grid caption="Combinations with small ャ, ュ, ョ" rows={COMBO_ROWS} source={combo} vowels={COMBO_VOWELS} columns={["ya", "yu", "yo"]} />
     </>
   );
+}
+
+export function KanaChart({ script = "hiragana" }: { script?: KanaScript }) {
+  return <ChartSet
+    source={script === "hiragana" ? ALL_KANA : KATAKANA}
+    title={`${script === "hiragana" ? "Hiragana" : "Katakana"} chart`}
+  />;
 }

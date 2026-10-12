@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   buildKanaRound, checkKanaAnswer, HIRAGANA_MODE_IDS, HIRAGANA_MODES, kanaPool,
-  type HiraganaModeId, type KanaQuestion, type KanaSet,
+  type HiraganaModeId, type KanaQuestion, type KanaScript, type KanaSet,
 } from "@/lib/hiragana";
 import { gradeFor } from "@/lib/modes";
 import { isoDate, recordGrade, recordRound, updateProgress, useProgress } from "@/lib/progress";
@@ -44,7 +44,7 @@ const reviewItem = (q: KanaQuestion): ReviewItem => ({
   note: q.item.note ?? "",
 });
 
-export function HiraganaQuiz() {
+export function HiraganaQuiz({ script = "hiragana" }: { script?: KanaScript }) {
   const { progress } = useProgress();
   const [mode, setMode] = useState<HiraganaModeId>("kana-read");
   const [sets, setSets] = useState<KanaSet[]>(["basic"]);
@@ -66,7 +66,7 @@ export function HiraganaQuiz() {
 
   const question = round.queue[round.index];
   const locked = phase !== "question";
-  const poolSize = kanaPool(sets).length;
+  const poolSize = kanaPool(sets, script).length;
 
   useEffect(() => {
     if (phase !== "question") return;
@@ -83,7 +83,7 @@ export function HiraganaQuiz() {
   const start = (m: HiraganaModeId = mode) => {
     setMode(m);
     requeues.current = new Map();
-    setRound(NEW_ROUND(buildKanaRound(m, { sets, length: ROUND_LENGTH })));
+    setRound(NEW_ROUND(buildKanaRound(m, { sets, length: ROUND_LENGTH, script })));
     setTyped("");
     setMissed([]);
     setLast(null);
@@ -141,7 +141,11 @@ export function HiraganaQuiz() {
     const scored = round.results.length ? correct / round.results.length : 0;
     const before = progress.level;
     const after = levelForXp(progress.xp + round.score);
-    updateProgress((p) => recordGrade(recordRound(p, { score: round.score, date: isoDate() }), mode, scored));
+    updateProgress((p) => recordGrade(
+      recordRound(p, { score: round.score, date: isoDate() }),
+      `${script}-${mode}`,
+      scored,
+    ));
     setSummary({ leveledUp: after > before, level: after });
     setAnnouncement(`Round complete. Score ${round.score}.`);
     setPhase("summary");
@@ -154,7 +158,7 @@ export function HiraganaQuiz() {
   const accuracy = round.results.length ? correctCount / round.results.length : 0;
 
   return (
-    <section aria-label="Hiragana quiz" className="relative overflow-hidden rounded-card border border-hairline bg-card">
+    <section aria-label={`${script} quiz`} className="relative overflow-hidden rounded-card border border-hairline bg-card">
       <p aria-live="polite" role="status" className="sr-only">{announcement}</p>
 
       {phase === "picking" && (
@@ -168,7 +172,7 @@ export function HiraganaQuiz() {
           <ul className="mt-6 grid gap-3 md:grid-cols-3">
             {HIRAGANA_MODE_IDS.map((id) => {
               const m = HIRAGANA_MODES[id];
-              const best = progress.grades[id];
+              const best = progress.grades[`${script}-${id}`];
               return (
                 <li key={id}>
                   <button

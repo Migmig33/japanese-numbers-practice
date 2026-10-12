@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
-  ALL_KANA, AMBIGUOUS, BASIC, BASIC_ROWS, buildKanaRound, checkKanaAnswer, COMBO, DAKUTEN, HIRAGANA_MODE_IDS,
-  HIRAGANA_MODES, COMBO_ROWS, COMBO_VOWELS, kanaOptions, kanaPool, quizzable, rowOf, type KanaQuestion,
+  ALL_KANA, ALL_KATAKANA, AMBIGUOUS, BASIC, BASIC_ROWS, buildKanaRound, checkKanaAnswer, COMBO, DAKUTEN,
+  HIRAGANA_MODE_IDS, HIRAGANA_MODES, COMBO_ROWS, COMBO_VOWELS, KATAKANA, kanaOptions, kanaPool, quizzable, rowOf,
+  type KanaQuestion,
 } from "./hiragana";
 
 function seeded(seed: number) {
@@ -21,6 +22,14 @@ describe("the chart", () => {
 
   it("has no duplicate characters", () => {
     expect(new Set(ALL_KANA.map((x) => x.kana)).size).toBe(ALL_KANA.length);
+  });
+
+  it("provides the matching katakana chart and quiz pool", () => {
+    expect(ALL_KATAKANA).toHaveLength(ALL_KANA.length);
+    expect(ALL_KATAKANA.map((x) => x.kana)).toEqual(expect.arrayContaining(["ア", "ン", "キャ"]));
+    expect(ALL_KATAKANA.find((x) => x.kana === "シ")?.romaji).toBe("shi");
+    expect(KATAKANA.filter(quizzable)).toHaveLength(102);
+    expect(kanaPool(["basic"], "katakana").map((x) => x.kana)).toContain("ン");
   });
 
   it("is written in real hiragana, with romaji in plain letters", () => {

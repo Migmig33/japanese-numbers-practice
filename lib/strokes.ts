@@ -198,6 +198,35 @@ export const KANA_GUIDES: readonly KanaGuide[] = [
   g("ん", "n", [[34, 26]]),
 ];
 
+const KATAKANA_COUNTS: Record<string, number> = {
+  ア: 2, イ: 2, ウ: 3, エ: 3, オ: 3,
+  カ: 2, キ: 3, ク: 2, ケ: 3, コ: 2,
+  サ: 3, シ: 3, ス: 2, セ: 2, ソ: 1,
+  タ: 3, チ: 3, ツ: 3, テ: 3, ト: 2,
+  ナ: 2, ニ: 2, ヌ: 2, ネ: 4, ノ: 1,
+  ハ: 2, ヒ: 2, フ: 4, ヘ: 1, ホ: 4,
+  マ: 2, ミ: 3, ム: 2, メ: 2, モ: 3,
+  ヤ: 2, ユ: 2, ヨ: 3,
+  ラ: 2, リ: 2, ル: 1, レ: 1, ロ: 3,
+  ワ: 2, ヲ: 3, ン: 2,
+};
+
+const toKatakana = (kana: string) =>
+  [...kana].map((character) => {
+    const code = character.codePointAt(0)!;
+    return String.fromCodePoint(code >= 0x3041 && code <= 0x3096 ? code + 0x60 : code);
+  }).join("");
+
+const KATAKANA_STARTS: readonly Point[] = [[30, 22], [58, 44], [70, 70], [40, 78]];
+const katakanaStarts = (char: string, count: number): readonly Point[] =>
+  KATAKANA_STARTS.slice(0, count).map(([x, y]) => [x, y] as Point);
+
+/** Katakana uses the same sounds as the basic hiragana set, with its own stroke counts. */
+export const KATAKANA_GUIDES: readonly KanaGuide[] = KANA_GUIDES.map((guide) => {
+  const char = toKatakana(guide.char);
+  return g(char, guide.reading, katakanaStarts(char, KATAKANA_COUNTS[char]!));
+});
+
 /**
  * What the tracing pad needs, from either source. `strokes` present means draw the ghost
  * from those paths; absent means draw the character's own glyph.
